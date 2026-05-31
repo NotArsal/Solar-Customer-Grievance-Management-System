@@ -32,4 +32,8 @@ const complaintSchema = new mongoose.Schema({
   closed_at: { type: Date }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
+complaintSchema.index({ status: 1 });
+complaintSchema.index({ created_at: -1 });
+
 export default mongoose.model('Complaint', complaintSchema);
+

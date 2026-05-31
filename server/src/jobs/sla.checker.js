@@ -1,9 +1,8 @@
 import cron from 'node-cron';
 import Complaint from '../modules/complaint/complaint.model.js';
 
-// Run every hour
-cron.schedule('0 * * * *', async () => {
-  console.log('Running SLA checker cron job...');
+export const checkSLA = async () => {
+  console.log('Running SLA checker...');
   try {
     const breached = await Complaint.find({
       status: { $in: ['Pending', 'In-Progress', 'On-Hold'] },
@@ -19,4 +18,10 @@ cron.schedule('0 * * * *', async () => {
   } catch (err) {
     console.error('SLA Checker Error:', err);
   }
-});
+};
+
+// Run immediately on startup
+checkSLA();
+
+// Then run every hour
+cron.schedule('0 * * * *', checkSLA);
