@@ -126,7 +126,7 @@ Customers access the grievance portal via `grievance.natureteksolar.com` or via 
 | Complaint Category | Dropdown | Yes | See categories in Section 15 |
 | Subject | Text (max 100 chars) | Yes | Short title |
 | Description | Textarea (max 1000 chars) | Yes | Detailed description |
-| Attachments | File upload | No | Images/PDF, max 5MB, stored on Cloudinary |
+| Attachments | File upload | No | Images/PDF, max 5MB, stored on ImgBB |
 
 **On Submission:**
 - Unique Ticket ID generated: `NTS-YYYY-XXXXX`
@@ -253,7 +253,7 @@ After a ticket is marked **Resolved**, customer receives an email/Telegram messa
 │   OTP Service (email-based fallback)                             │
 │   Telegram Webhook Handler                                       │
 │   Notification Service (Nodemailer)                              │
-│   File Upload Handler (Cloudinary)                               │
+│   File Upload Handler (ImgBB)                                    │
 │   SLA Engine (cron job, runs hourly)                             │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -271,7 +271,7 @@ After a ticket is marked **Resolved**, customer receives an email/Telegram messa
                     ┌─────────┴─────────┐
                     ▼                   ▼
          ┌──────────────┐    ┌──────────────────┐
-         │  Cloudinary  │    │ Telegram Bot API  │
+         │    ImgBB     │    │ Telegram Bot API  │
          │ (File Store) │    │ (@BotFather token)│
          └──────────────┘    └──────────────────┘
 ```
@@ -309,7 +309,7 @@ No code changes to the core platform. Zero technical risk for the client.
 | **OTP** | Nodemailer (email OTP) | — | Free, no external API needed |
 | **Email** | Nodemailer + Gmail SMTP | — | Free for low volume |
 | **Telegram Bot** | node-telegram-bot-api | v0.66 | Free Telegram API, two-way chat |
-| **File Storage** | Cloudinary | Free tier | Managed image/doc hosting |
+| **File Storage** | ImgBB | Free tier | Managed image/doc hosting |
 | **Scheduler** | node-cron | — | SLA breach checks, auto-close jobs |
 | **Hosting — Backend** | Render / Railway | Free tier | Managed Node.js, CI/CD from GitHub |
 | **Hosting — Frontend** | Vercel | Free tier | CDN, instant deploys from GitHub |
@@ -351,7 +351,7 @@ No code changes to the core platform. Zero technical risk for the client.
   category: String,           // Ref → categories.name
   subject: String,            // max 100 chars
   description: String,        // max 1000 chars
-  attachments: [String],      // Array of Cloudinary URLs
+  attachments: [String],      // Array of ImgBB URLs
 
   // Status & Assignment
   status: String,             // Enum: ["Pending","In-Progress","On-Hold","Escalated","Resolved","Unresolved","Closed"]

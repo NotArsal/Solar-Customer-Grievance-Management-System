@@ -42,7 +42,7 @@ const ticketSchema = new mongoose.Schema({
     default: 'NORMAL'
   },
   attachments: [
-    { type: String } // Array of image/PDF URLs (e.g., Cloudinary URLs)
+    { type: String } // Array of image/PDF URLs (e.g., ImgBB URLs)
   ],
   resolutionNotes: { 
     type: String // Notes added by the employee when resolving the ticket

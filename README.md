@@ -51,7 +51,6 @@ cgms-natureteksolar/
 ├── server/                          # Node.js + Express backend
 │   ├── config/
 │   │   ├── db.js                    # MongoDB Atlas connection
-│   │   └── cloudinary.js            # Cloudinary setup
 │   ├── models/
 │   │   ├── Complaint.js
 │   │   ├── User.js
@@ -73,7 +72,6 @@ cgms-natureteksolar/
 │   │   └── telegram.controller.js
 │   ├── middleware/
 │   │   ├── auth.middleware.js       # JWT verify + role check
-│   │   ├── upload.middleware.js     # Multer + Cloudinary
 │   │   └── errorHandler.js
 │   ├── services/
 │   │   ├── email.service.js         # Nodemailer
@@ -156,10 +154,6 @@ JWT_EXPIRES_IN=7d
 EMAIL_USER=support@natureteksolar.com
 EMAIL_PASS=your_gmail_app_password
 
-# Cloudinary (File Storage)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
 
 # Telegram Bot
 TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
@@ -187,7 +181,7 @@ VITE_APP_NAME=NatureTek Solar Support
 
 - Node.js 20 LTS
 - MongoDB Atlas account (free M0 tier)
-- Cloudinary account (free tier)
+- ImgBB account (free tier) for image uploads
 - Telegram Bot token (from @BotFather)
 - Gmail account with App Password enabled
 
