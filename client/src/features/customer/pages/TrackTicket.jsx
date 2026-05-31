@@ -1,29 +1,39 @@
 import { useState, useEffect } from 'react';
 import api from '../../../config/axios';
-import { getStatusColor } from '../../../utils/statusColors';
 import { useSearchParams } from 'react-router-dom';
 
 export default function TrackTicket() {
   const [searchParams] = useSearchParams();
   const [ticketId, setTicketId] = useState(searchParams.get('id') || '');
-  const [data, setData] = useState(null);
+  const [ticket, setTicket] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (searchParams.get('id')) {
-      handleTrack(null, searchParams.get('id'));
+      handleSearch(null, searchParams.get('id'));
     }
   }, [searchParams]);
 
-  const handleTrack = async (e, forceId = null) => {
+  const handleSearch = async (e, forceId = null) => {
     if (e) e.preventDefault();
     const idToTrack = forceId || ticketId;
     if (!idToTrack) return;
+    
+    setLoading(true);
+    setError('');
+    
     try {
       const res = await api.get(`/v1/complaints/${idToTrack}/track`);
-      setData(res.data);
+      setTicket(res.data.ticket);
+      setHistory(res.data.history || []);
     } catch (err) {
-      alert('Ticket not found');
-      setData(null);
+      setError('Ticket not found or invalid ID.');
+      setTicket(null);
+      setHistory([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,8 +47,8 @@ export default function TrackTicket() {
             type="text" 
             placeholder="Enter Ticket ID (e.g. NTS-2026-0001)" 
             className="input-field flex-1 text-sm font-mono tracking-wider" 
-            value={searchId} 
-            onChange={e => setSearchId(e.target.value)} 
+            value={ticketId} 
+            onChange={e => setTicketId(e.target.value)} 
           />
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Searching...' : 'Search'}
