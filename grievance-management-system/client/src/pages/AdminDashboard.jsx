@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const [tickets, setTickets] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,16 +12,33 @@ export default function AdminDashboard() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!token || user.role !== 'admin') return navigate('/login');
     fetchTickets();
+    fetchEmployees();
   }, [navigate]);
 
   const fetchTickets = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/v1/complaints', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const res = await api.get('/v1/complaints');
       setTickets(res.data);
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await api.get('/v1/auth/employees');
+      setEmployees(res.data);
+    } catch (err) {
+      console.error('Failed to fetch employees');
+    }
+  };
+
+  const handleAssign = async (ticketId, employeeId) => {
+    try {
+      await api.patch(`/v1/complaints/${ticketId}/assign`, { assigned_to: employeeId });
+      fetchTickets();
+    } catch (err) {
+      alert('Failed to assign ticket');
     }
   };
 
@@ -64,6 +82,7 @@ export default function AdminDashboard() {
                 <th className="p-4 font-semibold">Customer</th>
                 <th className="p-4 font-semibold">Status</th>
                 <th className="p-4 font-semibold">SLA Breached</th>
+                <th className="p-4 font-semibold">Assigned To</th>
                 <th className="p-4 font-semibold">Date</th>
               </tr>
             </thead>
@@ -80,11 +99,23 @@ export default function AdminDashboard() {
                   <td className="p-4">
                     {t.is_sla_breached ? <span className="text-red-600 font-bold px-2 py-1 bg-red-50 rounded border border-red-200 text-xs">Breached</span> : <span className="text-green-600 px-2 py-1 bg-green-50 rounded border border-green-200 text-xs font-bold">On Track</span>}
                   </td>
+                  <td className="p-4">
+                    <select 
+                      className="input-field py-1 px-2 text-xs cursor-pointer w-32" 
+                      value={t.assigned_to?._id || ''} 
+                      onChange={e => handleAssign(t._id, e.target.value)}
+                    >
+                      <option value="">Unassigned</option>
+                      {employees.map(emp => (
+                        <option key={emp._id} value={emp._id}>{emp.name}</option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="p-4 text-gray-500">{new Date(t.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
               {tickets.length === 0 && (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500">No tickets found.</td></tr>
+                <tr><td colSpan="6" className="p-8 text-center text-gray-500">No tickets found.</td></tr>
               )}
             </tbody>
           </table>

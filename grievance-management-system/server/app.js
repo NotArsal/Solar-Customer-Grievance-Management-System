@@ -2,10 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { errorHandler } from './middleware/error.middleware.js';
 
 import authRoutes from './routes/auth.routes.js';
 import complaintRoutes from './routes/complaint.routes.js';
 import telegramRoutes from './routes/telegram.routes.js';
+import mediaRoutes from './routes/media.routes.js';
 
 const app = express();
 
@@ -21,5 +23,8 @@ app.get('/health', (req, res) => {
 app.use('/v1/auth', authRoutes);
 app.use('/v1/complaints', complaintRoutes);
 app.use('/v1/telegram', telegramRoutes);
+app.use('/v1/media', mediaRoutes);
+
+app.use(errorHandler);
 
 export default app;

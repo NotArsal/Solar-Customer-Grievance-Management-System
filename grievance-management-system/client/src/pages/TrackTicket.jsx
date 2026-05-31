@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axios';
 
 export default function TrackTicket() {
   const [ticketId, setTicketId] = useState('');
@@ -8,7 +8,7 @@ export default function TrackTicket() {
   const handleTrack = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.get(`http://localhost:5000/v1/complaints/track/${ticketId}`);
+      const res = await api.get(`/v1/complaints/${ticketId}/track`);
       setData(res.data);
     } catch (err) {
       alert('Ticket not found');

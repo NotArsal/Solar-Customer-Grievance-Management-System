@@ -101,18 +101,23 @@ bot.on('message', async (msg) => {
       } else if (step === 'ATTACHMENTS') {
         // Process media if provided
         let attachmentUrl = null;
-        if (msg.photo) {
-          // Get the highest resolution photo
-          const fileId = msg.photo[msg.photo.length - 1].file_id;
-          attachmentUrl = await bot.getFileLink(fileId);
-        } else if (msg.video) {
-          attachmentUrl = await bot.getFileLink(msg.video.file_id);
-        } else if (msg.document) {
-          attachmentUrl = await bot.getFileLink(msg.document.file_id);
-        }
+        try {
+          let fileId = null;
+          if (msg.photo) {
+            fileId = msg.photo[msg.photo.length - 1].file_id;
+          } else if (msg.video) {
+            fileId = msg.video.file_id;
+          } else if (msg.document) {
+            fileId = msg.document.file_id;
+          }
 
-        if (attachmentUrl) {
-          session.data.attachments = [attachmentUrl];
+          if (fileId) {
+            const file = await bot.getFile(fileId);
+            attachmentUrl = `http://localhost:5000/v1/media/telegram?file_path=${file.file_path}`;
+            session.data.attachments = [attachmentUrl];
+          }
+        } catch (err) {
+          console.error('Error fetching file from Telegram:', err);
         }
 
         // Save to DB

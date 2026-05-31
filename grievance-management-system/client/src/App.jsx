@@ -12,8 +12,8 @@ function App() {
         <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div className="flex items-center space-x-3 cursor-pointer">
-              <div className="w-10 h-10 bg-brand-primary rounded-md flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-xl">N</span>
+              <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+                <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="text-2xl font-bold font-heading text-brand-primary tracking-tight">Nature Tek Solar</span>
