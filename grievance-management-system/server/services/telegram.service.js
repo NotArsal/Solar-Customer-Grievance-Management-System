@@ -5,6 +5,14 @@ import TicketHistory from '../models/TicketHistory.js';
 // Enabled polling: true so the bot actively fetches messages
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
+// Setup autocomplete commands menu for Telegram
+bot.setMyCommands([
+  { command: '/start', description: 'Start the bot and see instructions' },
+  { command: '/raise', description: 'Raise a new complaint' },
+  { command: '/track', description: 'Track an existing ticket (e.g. /track NTS-1234)' },
+  { command: '/cancel', description: 'Cancel current complaint registration' }
+]);
+
 console.log('✅ Telegram Bot is running in polling mode...');
 
 // In-memory session store for multi-step conversations
@@ -13,15 +21,18 @@ const sessions = new Map();
 bot.on('message', async (msg) => {
   try {
     const chatId = msg.chat.id;
-    const text = msg.text?.trim();
+    // Extract text from standard message or from media caption
+    const text = msg.text?.trim() || msg.caption?.trim();
+    const hasMedia = !!(msg.photo || msg.video || msg.document);
 
-    if (!text) return;
+    // If there's no text and no media, ignore
+    if (!text && !hasMedia) return;
 
     // Handle Cancel Command globally
     if (text === '/cancel') {
       if (sessions.has(chatId)) {
         sessions.delete(chatId);
-        return bot.sendMessage(chatId, '❌ Complaint registration cancelled.');
+        return bot.sendMessage(chatId, '❌ Complaint registration cancelled.', { reply_markup: { remove_keyboard: true } });
       } else {
         return bot.sendMessage(chatId, 'There is no active registration to cancel.');
       }
@@ -34,15 +45,15 @@ bot.on('message', async (msg) => {
       const step = session.step;
       
       if (step === 'NAME') {
-        session.data.customer_name = text;
+        session.data.customer_name = text || 'Customer';
         session.step = 'PHONE';
-        return bot.sendMessage(chatId, "📱 Great! Now, please provide your **Mobile Number**.");
+        return bot.sendMessage(chatId, "📱 Great! Now, please provide your **Mobile Number**.", { parse_mode: 'Markdown' });
       } else if (step === 'PHONE') {
-        session.data.customer_phone = text;
+        session.data.customer_phone = text || 'N/A';
         session.step = 'EMAIL';
-        return bot.sendMessage(chatId, "📧 Got it. Please enter your **Email Address**.");
+        return bot.sendMessage(chatId, "📧 Got it. Please enter your **Email Address**.", { parse_mode: 'Markdown' });
       } else if (step === 'EMAIL') {
-        session.data.customer_email = text;
+        session.data.customer_email = text || 'N/A';
         session.step = 'PRODUCT';
         // Provide a custom keyboard for easier selection
         const opts = {
@@ -50,35 +61,64 @@ bot.on('message', async (msg) => {
             keyboard: [[{ text: 'Solar Panel' }, { text: 'Inverter' }], [{ text: 'Battery' }, { text: 'Service' }]],
             one_time_keyboard: true,
             resize_keyboard: true
-          }
+          },
+          parse_mode: 'Markdown'
         };
         return bot.sendMessage(chatId, "⚡ What **product** is this regarding?", opts);
       } else if (step === 'PRODUCT') {
-        session.data.product_type = text;
+        session.data.product_type = text || 'Other';
         session.step = 'CATEGORY';
         const opts = {
           reply_markup: {
             keyboard: [[{ text: 'Product Defect' }, { text: 'Installation Issue' }], [{ text: 'Service Delay' }, { text: 'Billing' }]],
             one_time_keyboard: true,
             resize_keyboard: true
-          }
+          },
+          parse_mode: 'Markdown'
         };
         return bot.sendMessage(chatId, "🏷️ What is the **issue category**?", opts);
       } else if (step === 'CATEGORY') {
-        session.data.category = text;
+        session.data.category = text || 'General';
         session.step = 'SUBJECT';
-        const opts = { reply_markup: { remove_keyboard: true } };
+        const opts = { reply_markup: { remove_keyboard: true }, parse_mode: 'Markdown' };
         return bot.sendMessage(chatId, "📝 Please provide a short **Subject** for the issue (e.g., Inverter showing red light).", opts);
       } else if (step === 'SUBJECT') {
-        session.data.subject = text;
+        session.data.subject = text || 'No Subject';
         session.step = 'DESCRIPTION';
-        return bot.sendMessage(chatId, "🗣️ Finally, please provide a **detailed description** of the issue.");
+        return bot.sendMessage(chatId, "🗣️ Please provide a **detailed description** of the issue.", { parse_mode: 'Markdown' });
       } else if (step === 'DESCRIPTION') {
-        session.data.description = text;
-        
+        session.data.description = text || 'No description provided';
+        session.step = 'ATTACHMENTS';
+        const opts = {
+          reply_markup: {
+            keyboard: [[{ text: 'Skip' }]],
+            one_time_keyboard: true,
+            resize_keyboard: true
+          },
+          parse_mode: 'Markdown'
+        };
+        return bot.sendMessage(chatId, "📸 Would you like to attach a **photo or video** of the issue?\n\nIf yes, please send it now. Otherwise, tap **Skip**.", opts);
+      } else if (step === 'ATTACHMENTS') {
+        // Process media if provided
+        let attachmentUrl = null;
+        if (msg.photo) {
+          // Get the highest resolution photo
+          const fileId = msg.photo[msg.photo.length - 1].file_id;
+          attachmentUrl = await bot.getFileLink(fileId);
+        } else if (msg.video) {
+          attachmentUrl = await bot.getFileLink(msg.video.file_id);
+        } else if (msg.document) {
+          attachmentUrl = await bot.getFileLink(msg.document.file_id);
+        }
+
+        if (attachmentUrl) {
+          session.data.attachments = [attachmentUrl];
+        }
+
         // Save to DB
         try {
-          bot.sendMessage(chatId, "⏳ Submitting your complaint...");
+          const opts = { reply_markup: { remove_keyboard: true } };
+          bot.sendMessage(chatId, "⏳ Submitting your complaint...", opts);
           
           const year = new Date().getFullYear();
           const count = await Complaint.countDocuments();
@@ -107,7 +147,7 @@ bot.on('message', async (msg) => {
         } catch (err) {
           console.error(err);
           sessions.delete(chatId);
-          return bot.sendMessage(chatId, "❌ Sorry, an error occurred while saving your complaint. Please try again later or use the website.");
+          return bot.sendMessage(chatId, "❌ Sorry, an error occurred while saving your complaint. Please try again later or use the website.", { reply_markup: { remove_keyboard: true } });
         }
       }
       return;
@@ -118,8 +158,8 @@ bot.on('message', async (msg) => {
       await bot.sendMessage(chatId, 'Welcome to NatureTek Solar Support! ☀️\n\nUse /raise to register a new complaint directly here.\nUse /track <TicketID> to check your status.');
     } else if (text === '/raise') {
       sessions.set(chatId, { step: 'NAME', data: {} });
-      await bot.sendMessage(chatId, "Let's register a new complaint. You can type /cancel at any time to abort.\n\nFirst, please reply with your **Full Name**.");
-    } else if (text.startsWith('/track')) {
+      await bot.sendMessage(chatId, "Let's register a new complaint. You can type /cancel at any time to abort.\n\nFirst, please reply with your **Full Name**.", { parse_mode: 'Markdown' });
+    } else if (text?.startsWith('/track')) {
       const ticketId = text.split(' ')[1];
       if (!ticketId) {
         await bot.sendMessage(chatId, '⚠️ Usage: /track <TicketID>');
