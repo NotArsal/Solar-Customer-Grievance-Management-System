@@ -1,13 +1,4 @@
-import { useState, useEffect } from 'react';
-import { type ButtonHTMLAttributes, type CSSProperties, useId } from "react";
-
-export interface SpinProps extends Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  "children"
-> {
-  duration?: number;
-  [key: `data-${string}`]: string | number | boolean | null | undefined;
-}
+import { useState, useEffect, useId } from 'react';
 
 export function Spin({
   duration = 400,
@@ -16,7 +7,7 @@ export function Spin({
   title = "Toggle theme",
   "aria-label": ariaLabel = "Toggle theme",
   ...props
-}: SpinProps) {
+}) {
   const toggleId = useId();
 
   const clipMainId = `toggles.dev-spin-main-${toggleId}`;
