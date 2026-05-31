@@ -8,6 +8,7 @@ import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import NotificationBell from './components/NotificationBell';
 
 import CustomerAuth from './features/customer/pages/CustomerAuth';
+import Footer from './components/Footer';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -56,11 +57,7 @@ function App() {
           </Routes>
         </main>
 
-        <footer className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 py-8 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 text-center text-sm text-brand-secondary dark:text-gray-400 font-medium">
-            &copy; {new Date().getFullYear()} Nature Tek Solar Pvt. Ltd. All rights reserved.
-          </div>
-        </footer>
+        <Footer />
       </div>
     </Router>
   );
