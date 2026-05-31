@@ -24,22 +24,41 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20">
-      <div className="premium-card">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-secondary to-brand-primary"></div>
-        <h2 className="text-3xl font-bold mb-6 text-brand-primary">Staff Portal</h2>
-        {error && <div className="p-3 mb-4 bg-red-50 text-red-600 rounded border border-red-200 text-sm">{error}</div>}
+    <div className="max-w-md mx-auto">
+      <div className="card-feature-light">
+        <h2 className="text-[28px] tracking-display-md font-medium mb-6 text-brand-ink">Staff Authentication</h2>
+        {error && <div className="p-3 mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-sm font-medium">{error}</div>}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold uppercase text-gray-500 mb-2">Email</label>
-            <input required type="email" placeholder="staff@natureteksolar.com" className="input-field" value={email} onChange={e => setEmail(e.target.value)} />
+            <label className="block text-xs font-medium text-brand-ink-mute mb-1">Employee Email</label>
+            <input 
+              type="email" 
+              required 
+              className="input-field" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+            />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase text-gray-500 mb-2">Password</label>
-            <input required type="password" placeholder="••••••••" className="input-field" value={password} onChange={e => setPassword(e.target.value)} />
+            <label className="block text-xs font-medium text-brand-ink-mute mb-1">Password</label>
+            <input 
+              type="password" 
+              required 
+              className="input-field" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
           </div>
-          <button type="submit" className="btn-primary w-full mt-2">Sign In</button>
+          <button 
+            type="submit" 
+            className="btn-primary w-full mt-4"
+          >
+            Authenticate
+          </button>
         </form>
+        <div className="mt-6 text-center text-xs text-brand-ink-mute">
+          <p>Authorized personnel only. Activities are monitored.</p>
+        </div>
       </div>
     </div>
   );

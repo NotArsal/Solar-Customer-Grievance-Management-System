@@ -1,9 +1,10 @@
 import express from 'express';
-import { login, sendOTP, verifyOTP, getEmployees } from './auth.controller.js';
+import { login, customerRegister, sendOTP, verifyOTP, getEmployees } from './auth.controller.js';
 import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middleware.js';
 
 const router = express.Router();
 
+router.post('/register', customerRegister);
 router.post('/login', login);
 router.post('/otp/send', sendOTP);
 router.post('/otp/verify', verifyOTP);

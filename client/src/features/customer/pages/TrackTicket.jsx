@@ -1,15 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../config/axios';
 import { getStatusColor } from '../../../utils/statusColors';
+import { useSearchParams } from 'react-router-dom';
 
 export default function TrackTicket() {
-  const [ticketId, setTicketId] = useState('');
+  const [searchParams] = useSearchParams();
+  const [ticketId, setTicketId] = useState(searchParams.get('id') || '');
   const [data, setData] = useState(null);
 
-  const handleTrack = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (searchParams.get('id')) {
+      handleTrack(null, searchParams.get('id'));
+    }
+  }, [searchParams]);
+
+  const handleTrack = async (e, forceId = null) => {
+    if (e) e.preventDefault();
+    const idToTrack = forceId || ticketId;
+    if (!idToTrack) return;
     try {
-      const res = await api.get(`/v1/complaints/${ticketId}/track`);
+      const res = await api.get(`/v1/complaints/${idToTrack}/track`);
       setData(res.data);
     } catch (err) {
       alert('Ticket not found');
@@ -18,45 +28,68 @@ export default function TrackTicket() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
-      <div className="premium-card">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-secondary to-brand-primary"></div>
-        <h2 className="text-3xl font-bold mb-2">Track Your Ticket</h2>
-        <p className="text-brand-text mb-8">Enter your Ticket ID below to check the real-time status of your complaint.</p>
+    <div className="max-w-4xl mx-auto">
+      <div className="card-feature-light">
+        <h2 className="text-[28px] tracking-display-md font-medium mb-6 text-brand-ink">Track Your Ticket</h2>
         
-        <form onSubmit={handleTrack} className="flex space-x-4 mb-10">
-          <input required placeholder="E.g., NTS-2026-00001" className="input-field shadow-sm" value={ticketId} onChange={e => setTicketId(e.target.value)} />
-          <button type="submit" className="btn-primary whitespace-nowrap">Track Status</button>
+        <form onSubmit={handleSearch} className="flex space-x-3 mb-8">
+          <input 
+            type="text" 
+            placeholder="Enter Ticket ID (e.g. NTS-2026-0001)" 
+            className="input-field flex-1 text-sm font-mono tracking-wider" 
+            value={searchId} 
+            onChange={e => setSearchId(e.target.value)} 
+          />
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Searching...' : 'Search'}
+          </button>
         </form>
 
-        {data && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="p-6 bg-brand-input rounded-md border border-gray-100 shadow-sm">
-              <h3 className="font-bold text-xl border-b border-gray-200 dark:border-gray-700 pb-3 mb-4 text-brand-primary dark:text-white">Ticket Summary</h3>
-              <div className="grid grid-cols-2 gap-4 text-brand-text dark:text-gray-300">
-                <p><strong className="text-gray-900 dark:text-gray-100 block mb-1">Status</strong> <span className={`inline-block px-3 py-1 border shadow-sm rounded font-bold uppercase tracking-wide text-xs ${getStatusColor(data.complaint.status)}`}>{data.complaint.status}</span></p>
-                <p><strong className="text-gray-900 dark:text-gray-100 block mb-1">Product</strong> {data.complaint.product_type}</p>
-                <p className="col-span-2"><strong className="text-gray-900 block mb-1">Subject</strong> {data.complaint.subject}</p>
-                <p className="col-span-2"><strong className="text-gray-900 block mb-1">Date Raised</strong> {new Date(data.complaint.created_at).toLocaleString()}</p>
+        {error && <p className="text-red-600 text-sm font-medium mb-4">{error}</p>}
+
+        {ticket && (
+          <div className="animate-fade-in border-t border-brand-hairline pt-6">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-xl font-medium text-brand-ink">{ticket.subject}</h3>
+                <p className="text-sm text-brand-ink-mute mt-1">Ticket ID: <span className="font-mono text-brand-ink font-medium">{ticket.ticket_id}</span></p>
+              </div>
+              <span className="text-xs uppercase font-medium bg-brand-canvas-soft border border-brand-hairline-strong px-3 py-1 rounded-sm text-brand-ink-secondary">
+                {ticket.status}
+              </span>
+            </div>
+
+            <div className="bg-brand-canvas-soft rounded-md p-4 mb-8 border border-brand-hairline-cool text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-brand-ink-mute text-[10px] uppercase font-medium">Category</p>
+                  <p className="font-medium text-brand-ink mt-1">{ticket.category_ref?.name || ticket.product_type}</p>
+                </div>
+                <div>
+                  <p className="text-brand-ink-mute text-[10px] uppercase font-medium">Priority</p>
+                  <p className={`font-medium mt-1 ${ticket.priority === 'High' || ticket.priority === 'Critical' ? 'text-red-600' : 'text-brand-ink'}`}>{ticket.priority}</p>
+                </div>
+                <div>
+                  <p className="text-brand-ink-mute text-[10px] uppercase font-medium">Created</p>
+                  <p className="font-medium text-brand-ink mt-1">{new Date(ticket.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-brand-ink-mute text-[10px] uppercase font-medium">Assigned To</p>
+                  <p className="font-medium text-brand-ink mt-1">{ticket.assigned_to ? ticket.assigned_to.name : 'Unassigned'}</p>
+                </div>
               </div>
             </div>
 
-            <div>
-              <h3 className="font-bold text-xl mb-6 text-brand-primary">Update History</h3>
-              <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-                {data.history.map((h, i) => (
-                  <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-brand-bg shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-brand-primary font-bold">
-                      {data.history.length - i}
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md shadow-sm bg-white border border-gray-100">
-                      <time className="text-xs font-bold uppercase text-brand-secondary mb-1 block">{new Date(h.timestamp).toLocaleString()}</time>
-                      <p className="font-semibold text-brand-primary mb-1">Status: {h.to_status}</p>
-                      <p className="text-sm text-brand-text">{h.note}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <h4 className="text-sm font-medium text-brand-ink mb-4">Ticket History</h4>
+            <div className="relative border-l-2 border-brand-hairline-cool ml-3 space-y-6">
+              {history.map((h, i) => (
+                <div key={i} className="relative pl-6">
+                  <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-canvas border-2 border-brand-primary rounded-full"></div>
+                  <p className="text-sm font-medium text-brand-ink">{h.action}</p>
+                  {h.details && <p className="text-sm text-brand-ink-mute mt-1">{h.details}</p>}
+                  <p className="text-xs text-brand-ink-faint mt-1">{new Date(h.timestamp).toLocaleString()} by {h.actor?.name || 'System'}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}

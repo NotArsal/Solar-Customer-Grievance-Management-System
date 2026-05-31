@@ -2,21 +2,18 @@ import { useState, useEffect } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 
-import { getStatusColor } from '../../../utils/statusColors';
-
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [updateNote, setUpdateNote] = useState('');
-  const [newStatus, setNewStatus] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [status, setStatus] = useState('');
   const navigate = useNavigate();
+
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!token) return navigate('/login');
-    setCurrentUser(user);
+    if (!token || currentUser.role !== 'employee') return navigate('/login');
     fetchTickets();
   }, [navigate]);
 
@@ -24,10 +21,6 @@ export default function EmployeeDashboard() {
     try {
       const res = await api.get('/v1/complaints');
       setTickets(res.data);
-      if (selectedTicket) {
-        const updated = res.data.find(t => t._id === selectedTicket._id);
-        if (updated) setSelectedTicket(updated);
-      }
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
     }
@@ -36,141 +29,111 @@ export default function EmployeeDashboard() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await api.patch(`/v1/complaints/${selectedTicket._id}/status`, {
-        status: newStatus,
-        note: updateNote,
-        is_public: true
-      });
+      await api.patch(`/v1/complaints/${selectedTicket._id}/status`, { status, note: updateNote });
+      setSelectedTicket(null);
       setUpdateNote('');
       fetchTickets();
     } catch (err) {
-      alert('Failed to update status');
+      alert('Failed to update ticket');
     }
-  };
-
-  const handleClaim = async (ticketId) => {
-    try {
-      await api.patch(`/v1/complaints/${ticketId}/assign`, { assigned_to: currentUser.id });
-      fetchTickets();
-    } catch (err) {
-      alert('Failed to claim ticket');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-brand-primary dark:text-white">Support Dashboard</h2>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm font-semibold text-brand-text dark:text-gray-300">Hi, {currentUser?.name}</span>
-          <button onClick={handleLogout} className="text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-brand-primary dark:hover:text-white transition-colors">Logout</button>
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="md:col-span-1 space-y-6">
+        <h2 className="text-[28px] tracking-display-md font-medium text-brand-ink mb-6">My Workspace</h2>
+        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+          {tickets.length === 0 ? (
+            <div className="p-8 text-center text-sm text-brand-ink-mute border border-brand-hairline rounded-lg bg-brand-canvas-soft">
+              No tickets currently assigned to you.
+            </div>
+          ) : (
+            tickets.map(t => (
+              <div 
+                key={t._id} 
+                onClick={() => { setSelectedTicket(t); setStatus(t.status); setUpdateNote(''); }}
+                className={`p-4 border rounded-md cursor-pointer transition-colors ${selectedTicket?._id === t._id ? 'border-brand-primary bg-brand-canvas shadow-level-1' : 'border-brand-hairline bg-brand-canvas-soft hover:bg-brand-canvas hover:border-brand-hairline-strong'}`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-mono text-sm font-medium text-brand-ink">{t.ticket_id}</span>
+                  <span className="text-[10px] uppercase font-medium bg-brand-canvas border border-brand-hairline px-2 py-0.5 rounded-sm text-brand-ink-secondary">{t.status}</span>
+                </div>
+                <p className="text-sm font-medium text-brand-ink-secondary truncate">{t.subject}</p>
+                <div className="flex justify-between items-center mt-3 text-[10px] text-brand-ink-mute">
+                  <span>{t.priority} Priority</span>
+                  {t.is_sla_breached && <span className="text-red-600 font-medium">SLA Breached</span>}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 premium-card p-0 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                <th className="p-4 font-semibold">Ticket ID</th>
-                <th className="p-4 font-semibold">Subject</th>
-                <th className="p-4 font-semibold">Status</th>
-                <th className="p-4 font-semibold">Assigned</th>
-                <th className="p-4 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {tickets.map(t => (
-                <tr key={t._id} className={`border-b border-gray-50 dark:border-gray-700 transition-colors ${selectedTicket?._id === t._id ? 'bg-blue-50/50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
-                  <td className="p-4 font-bold text-brand-primary dark:text-gray-200">{t.ticket_id}</td>
-                  <td className="p-4 text-brand-text dark:text-gray-300 truncate max-w-[150px]">{t.subject}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide border shadow-sm ${getStatusColor(t.status)}`}>
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {t.assigned_to ? (
-                      <span className="text-xs font-semibold text-gray-600">{t.assigned_to.name}</span>
-                    ) : (
-                      <button onClick={() => handleClaim(t._id)} className="text-xs px-2 py-1 bg-brand-primary text-white rounded hover:bg-brand-secondary font-semibold transition-colors">
-                        Claim
-                      </button>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <button onClick={() => { setSelectedTicket(t); setNewStatus(t.status); }} className="text-brand-secondary hover:text-brand-primary font-semibold underline underline-offset-2">View</button>
-                  </td>
-                </tr>
-              ))}
-              {tickets.length === 0 && (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500">No tickets found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div>
-          {selectedTicket ? (
-            <div className="premium-card sticky top-24">
-              <h3 className="text-xl font-bold mb-4 text-brand-primary border-b border-gray-100 pb-3">Update Ticket</h3>
-              <div className="space-y-4 text-sm mb-6">
-                <p><strong>ID:</strong> <span className="font-mono text-brand-primary">{selectedTicket.ticket_id}</span></p>
-                <p><strong>Customer:</strong> {selectedTicket.customer_name} <span className="text-gray-400">({selectedTicket.customer_phone})</span></p>
-                <p><strong>Product:</strong> {selectedTicket.product_type}</p>
-                <div>
-                  <strong>Description:</strong>
-                  <p className="text-gray-600 mt-2 p-3 bg-gray-50 border border-gray-100 rounded leading-relaxed">{selectedTicket.description}</p>
-                </div>
-                {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
-                  <div>
-                    <strong>Attachments:</strong>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {selectedTicket.attachments.map((url, i) => (
-                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 rounded border overflow-hidden shadow-sm hover:opacity-80 transition-opacity">
-                          <img src={url} alt="Attachment" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                          <div className="hidden w-full h-full bg-gray-100 items-center justify-center text-xs text-gray-500 text-center p-1">View File</div>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
+      <div className="md:col-span-2">
+        {selectedTicket ? (
+          <div className="card-feature-light animate-fade-in">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-[28px] tracking-display-md font-medium text-brand-ink leading-tight">{selectedTicket.subject}</h3>
+                <p className="text-sm text-brand-ink-mute mt-2">ID: <span className="font-mono font-medium text-brand-ink">{selectedTicket.ticket_id}</span> • Product: <span className="font-medium text-brand-ink">{selectedTicket.product_type}</span></p>
               </div>
-              <form onSubmit={handleUpdate} className="space-y-4">
+            </div>
+
+            <div className="bg-brand-canvas-soft p-4 rounded-md border border-brand-hairline-cool mb-6">
+              <p className="text-xs font-medium uppercase text-brand-ink-mute mb-2">Customer Description</p>
+              <p className="text-sm text-brand-ink whitespace-pre-wrap">{selectedTicket.description}</p>
+            </div>
+
+            <form onSubmit={handleUpdate} className="space-y-4 border-t border-brand-hairline-cool pt-6">
+              <h4 className="text-lg font-medium text-brand-ink">Update Status</h4>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-gray-500 mb-2">New Status</label>
-                  <select className="input-field py-3 px-3 text-sm" value={newStatus} onChange={e => setNewStatus(e.target.value)}>
-                    <option>Pending</option>
-                    <option>In-Progress</option>
-                    <option>On-Hold</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
+                  <label className="block text-xs font-medium text-brand-ink-mute mb-1">New Status</label>
+                  <select className="input-field" value={status} onChange={e => setStatus(e.target.value)}>
+                    <option>Pending</option><option>In-Progress</option><option>Resolved</option><option>Closed</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-gray-500 mb-2">Update Note</label>
-                  <textarea required rows="3" className="input-field py-3 px-3 text-sm resize-none" placeholder="What actions were taken?" value={updateNote} onChange={e => setUpdateNote(e.target.value)} />
-                </div>
-                <div className="flex space-x-3 pt-2">
-                  <button type="submit" className="btn-primary py-2 px-4 text-sm flex-1">Save Update</button>
-                  <button type="button" onClick={() => setSelectedTicket(null)} className="py-2 px-4 bg-gray-100 text-gray-700 rounded font-semibold text-sm hover:bg-gray-200 transition-colors">Close</button>
-                </div>
-              </form>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-ink-mute mb-1">Update Note (visible to customer)</label>
+                <textarea required rows="3" className="input-field resize-none" value={updateNote} onChange={e => setUpdateNote(e.target.value)} />
+              </div>
+              <div className="flex space-x-3 pt-2">
+                <button type="submit" className="btn-primary flex-1">Save Update</button>
+                <button type="button" onClick={() => setSelectedTicket(null)} className="btn-secondary">Close</button>
+              </div>
+            </form>
+            
+            <div className="mt-8 pt-6 border-t border-brand-hairline-cool">
+              <h4 className="text-sm font-medium text-brand-ink mb-3">Request Reassignment</h4>
+              <div className="flex space-x-2">
+                <input id="reassignReason" placeholder="Reason for reassignment..." className="input-field text-sm flex-1" />
+                <button 
+                  onClick={async () => {
+                    const reason = document.getElementById('reassignReason').value;
+                    if (!reason) return alert('Provide a reason');
+                    try {
+                      await api.patch(`/v1/complaints/${selectedTicket._id}/reassign-request`, { reason });
+                      alert('Reassignment requested');
+                      document.getElementById('reassignReason').value = '';
+                      fetchTickets();
+                    } catch (err) { alert('Error requesting reassignment'); }
+                  }} 
+                  className="bg-brand-canvas text-red-600 font-medium px-4 py-2 rounded-sm border border-red-200 hover:bg-red-50 text-sm transition-colors"
+                >
+                  Request
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="premium-card flex flex-col items-center justify-center h-64 text-gray-400 text-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p>Select a ticket from the list to view details and update status.</p>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="card-feature-light flex flex-col items-center justify-center h-64 text-center border-dashed">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-brand-hairline-strong mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p className="text-brand-ink-mute font-medium text-sm">Select a ticket from your workspace to view details and update status.</p>
+          </div>
+        )}
       </div>
     </div>
   );

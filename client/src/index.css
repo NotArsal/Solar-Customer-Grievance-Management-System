@@ -1,24 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply antialiased text-brand-text bg-gray-50 font-body;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-brand-heading;
+    @apply antialiased text-brand-ink bg-brand-canvas font-sans;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-primary text-white px-6 py-3 rounded-md font-bold tracking-wide transition-all duration-300 hover:bg-brand-secondary hover:shadow-premium-hover active:scale-95;
+    @apply bg-brand-primary text-brand-ink px-4 py-2 rounded-sm font-medium transition-colors hover:bg-brand-primary-deep;
+  }
+  .btn-secondary {
+    @apply bg-brand-canvas text-brand-ink px-4 py-2 rounded-sm font-medium border border-brand-hairline-strong transition-colors hover:bg-brand-canvas-soft;
   }
   .input-field {
-    @apply w-full bg-brand-input text-brand-text p-4 rounded-md border-0 focus:ring-2 focus:ring-brand-secondary focus:bg-white focus:outline-none transition-all duration-200;
+    @apply w-full bg-brand-canvas text-brand-ink px-3 py-2 rounded-sm border border-brand-hairline focus:border-brand-hairline-strong focus:outline-none transition-colors;
   }
-  .premium-card {
-    @apply bg-white rounded-md p-8 border border-gray-100 shadow-premium transition-shadow duration-300 hover:shadow-premium-hover relative overflow-hidden;
+  .card-feature-light {
+    @apply bg-brand-canvas rounded-lg p-8 border border-brand-hairline shadow-level-1 relative overflow-hidden;
+  }
+  .pill-tag-green {
+    @apply bg-brand-primary text-brand-ink px-2 py-0.5 rounded-full text-xs;
   }
 }

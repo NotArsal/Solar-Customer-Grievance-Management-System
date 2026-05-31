@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
   password_hash: { type: String, required: true },
-  role: { type: String, enum: ["employee", "admin", "superadmin"], default: "employee" },
+  role: { type: String, enum: ["customer", "employee", "admin", "superadmin"], default: "customer" },
   department: { type: String },
   specialization: { type: String, enum: ["Solar Panel", "Inverter", "Battery", "Service", "Other", "General"], default: "General" },
   activeTicketsCount: { type: Number, default: 0 },

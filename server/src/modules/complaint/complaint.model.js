@@ -22,6 +22,12 @@ const complaintSchema = new mongoose.Schema({
     default: "Medium" 
   },
   assigned_to: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  customer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  category_ref: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  reassignment_request: {
+    is_requested: { type: Boolean, default: false },
+    reason: { type: String }
+  },
   sla_due_at: { type: Date },
   is_sla_breached: { type: Boolean, default: false },
   source: { type: String, enum: ["web", "telegram", "email"], default: "web" },

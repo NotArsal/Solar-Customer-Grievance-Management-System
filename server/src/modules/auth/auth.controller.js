@@ -3,6 +3,21 @@ import bcrypt from 'bcrypt';
 import asyncHandler from 'express-async-handler';
 import User from '../user/user.model.js';
 
+export const customerRegister = asyncHandler(async (req, res) => {
+  const { name, email, phone, password } = req.body;
+  const exists = await User.findOne({ email });
+  if (exists) {
+    res.status(400);
+    throw new Error('Email already registered');
+  }
+  const password_hash = await bcrypt.hash(password, 10);
+  const user = await User.create({
+    name, email, phone, password_hash, role: 'customer'
+  });
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  res.status(201).json({ token, user: { id: user._id, name: user.name, role: user.role, email: user.email } });
+});
+
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
