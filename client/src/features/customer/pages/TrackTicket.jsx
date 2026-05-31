@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../../../config/axios';
+import { getStatusColor } from '../../../utils/statusColors';
 
 export default function TrackTicket() {
   const [ticketId, setTicketId] = useState('');
@@ -31,10 +32,10 @@ export default function TrackTicket() {
         {data && (
           <div className="space-y-8 animate-fade-in">
             <div className="p-6 bg-brand-input rounded-md border border-gray-100 shadow-sm">
-              <h3 className="font-bold text-xl border-b border-gray-200 pb-3 mb-4 text-brand-primary">Ticket Summary</h3>
-              <div className="grid grid-cols-2 gap-4 text-brand-text">
-                <p><strong className="text-gray-900 block mb-1">Status</strong> <span className="inline-block px-3 py-1 bg-white border border-gray-200 shadow-sm text-brand-primary rounded font-bold uppercase tracking-wide text-xs">{data.complaint.status}</span></p>
-                <p><strong className="text-gray-900 block mb-1">Product</strong> {data.complaint.product_type}</p>
+              <h3 className="font-bold text-xl border-b border-gray-200 dark:border-gray-700 pb-3 mb-4 text-brand-primary dark:text-white">Ticket Summary</h3>
+              <div className="grid grid-cols-2 gap-4 text-brand-text dark:text-gray-300">
+                <p><strong className="text-gray-900 dark:text-gray-100 block mb-1">Status</strong> <span className={`inline-block px-3 py-1 border shadow-sm rounded font-bold uppercase tracking-wide text-xs ${getStatusColor(data.complaint.status)}`}>{data.complaint.status}</span></p>
+                <p><strong className="text-gray-900 dark:text-gray-100 block mb-1">Product</strong> {data.complaint.product_type}</p>
                 <p className="col-span-2"><strong className="text-gray-900 block mb-1">Subject</strong> {data.complaint.subject}</p>
                 <p className="col-span-2"><strong className="text-gray-900 block mb-1">Date Raised</strong> {new Date(data.complaint.created_at).toLocaleString()}</p>
               </div>

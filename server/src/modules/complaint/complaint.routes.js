@@ -15,7 +15,7 @@ router.post('/', complaintLimiter, createComplaint);
 router.get('/:ticket_id/track', trackComplaint);
 
 // Protected routes
-router.get('/', authMiddleware, roleMiddleware(['admin', 'employee']), listComplaints);
+router.get('/', authMiddleware, roleMiddleware(['admin', 'employee', 'customer']), listComplaints);
 router.patch('/:id/status', authMiddleware, roleMiddleware(['admin', 'employee']), updateStatus);
 router.patch('/:id/assign', authMiddleware, roleMiddleware(['admin', 'employee']), assignTicket);
 

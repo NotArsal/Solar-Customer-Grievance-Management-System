@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 
+import { getStatusColor } from '../../../utils/statusColors';
+
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -63,18 +65,18 @@ export default function EmployeeDashboard() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-brand-primary">Support Dashboard</h2>
+        <h2 className="text-3xl font-bold text-brand-primary dark:text-white">Support Dashboard</h2>
         <div className="flex items-center space-x-4">
-          <span className="text-sm font-semibold text-brand-text">Hi, {currentUser?.name}</span>
-          <button onClick={handleLogout} className="text-sm font-semibold text-gray-500 hover:text-brand-primary transition-colors">Logout</button>
+          <span className="text-sm font-semibold text-brand-text dark:text-gray-300">Hi, {currentUser?.name}</span>
+          <button onClick={handleLogout} className="text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-brand-primary dark:hover:text-white transition-colors">Logout</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 premium-card p-0 overflow-hidden">
+        <div className="lg:col-span-2 premium-card p-0 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500">
+              <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 <th className="p-4 font-semibold">Ticket ID</th>
                 <th className="p-4 font-semibold">Subject</th>
                 <th className="p-4 font-semibold">Status</th>
@@ -84,11 +86,11 @@ export default function EmployeeDashboard() {
             </thead>
             <tbody className="text-sm">
               {tickets.map(t => (
-                <tr key={t._id} className={`border-b border-gray-50 transition-colors ${selectedTicket?._id === t._id ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}>
-                  <td className="p-4 font-bold text-brand-primary">{t.ticket_id}</td>
-                  <td className="p-4 text-brand-text truncate max-w-[150px]">{t.subject}</td>
+                <tr key={t._id} className={`border-b border-gray-50 dark:border-gray-700 transition-colors ${selectedTicket?._id === t._id ? 'bg-blue-50/50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                  <td className="p-4 font-bold text-brand-primary dark:text-gray-200">{t.ticket_id}</td>
+                  <td className="p-4 text-brand-text dark:text-gray-300 truncate max-w-[150px]">{t.subject}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide border shadow-sm ${t.status === 'Pending' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' : t.status === 'Resolved' || t.status === 'Closed' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-blue-50 text-blue-800 border-blue-200'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide border shadow-sm ${getStatusColor(t.status)}`}>
                       {t.status}
                     </span>
                   </td>
