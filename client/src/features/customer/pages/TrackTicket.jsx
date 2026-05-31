@@ -26,7 +26,7 @@ export default function TrackTicket() {
     
     try {
       const res = await api.get(`/v1/complaints/${idToTrack}/track`);
-      setTicket(res.data.ticket);
+      setTicket(res.data.complaint);
       setHistory(res.data.history || []);
     } catch (err) {
       setError('Ticket not found or invalid ID.');
