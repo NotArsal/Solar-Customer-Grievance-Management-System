@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import api from '../config/axios';
+import api from '../../../config/axios';
 
 
 export default function CustomerPortal() {

@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
-import Complaint from '../models/Complaint.js';
-import TicketHistory from '../models/TicketHistory.js';
+import Complaint from '../modules/complaint/complaint.model.js';
+import TicketHistory from '../modules/complaint/ticketHistory.model.js';
 
 // Enabled polling: true so the bot actively fetches messages
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });

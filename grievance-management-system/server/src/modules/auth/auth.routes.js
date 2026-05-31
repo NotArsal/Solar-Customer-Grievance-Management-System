@@ -1,6 +1,6 @@
 import express from 'express';
-import { login, sendOTP, verifyOTP, getEmployees } from '../controllers/auth.controller.js';
-import { authMiddleware, roleMiddleware } from '../middleware/auth.middleware.js';
+import { login, sendOTP, verifyOTP, getEmployees } from './auth.controller.js';
+import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middleware.js';
 
 const router = express.Router();
 

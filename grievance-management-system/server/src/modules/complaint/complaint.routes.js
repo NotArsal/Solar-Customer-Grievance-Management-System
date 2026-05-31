@@ -1,7 +1,7 @@
 import express from 'express';
-import { createComplaint, trackComplaint, listComplaints, updateStatus, assignTicket } from '../controllers/complaint.controller.js';
+import { createComplaint, trackComplaint, listComplaints, updateStatus, assignTicket } from './complaint.controller.js';
 import rateLimit from 'express-rate-limit';
-import { authMiddleware, roleMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middleware.js';
 
 const router = express.Router();
 

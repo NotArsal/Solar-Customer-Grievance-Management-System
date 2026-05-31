@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { errorHandler } from './middleware/error.middleware.js';
+import { errorHandler } from './core/middleware/error.middleware.js';
 
-import authRoutes from './routes/auth.routes.js';
-import complaintRoutes from './routes/complaint.routes.js';
-import telegramRoutes from './routes/telegram.routes.js';
-import mediaRoutes from './routes/media.routes.js';
+import authRoutes from './modules/auth/auth.routes.js';
+import complaintRoutes from './modules/complaint/complaint.routes.js';
+import telegramRoutes from './services/telegram.routes.js';
+import mediaRoutes from './core/utils/media.routes.js';
 
 const app = express();
 

@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import Complaint from '../models/Complaint.js';
+import Complaint from '../modules/complaint/complaint.model.js';
 
 // Run every hour
 cron.schedule('0 * * * *', async () => {

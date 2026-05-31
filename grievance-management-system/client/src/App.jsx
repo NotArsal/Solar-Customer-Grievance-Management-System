@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import CustomerPortal from './pages/CustomerPortal';
-import TrackTicket from './pages/TrackTicket';
-import EmployeeDashboard from './pages/EmployeeDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import Login from './pages/Login';
+import CustomerPortal from './features/customer/pages/CustomerPortal';
+import TrackTicket from './features/customer/pages/TrackTicket';
+import EmployeeDashboard from './features/employee/pages/EmployeeDashboard';
+import AdminDashboard from './features/admin/pages/AdminDashboard';
+import Login from './features/auth/pages/Login';
 
 function App() {
   return (

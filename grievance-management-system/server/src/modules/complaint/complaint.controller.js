@@ -1,7 +1,7 @@
-import Complaint from '../models/Complaint.js';
-import TicketHistory from '../models/TicketHistory.js';
-import { sendTicketConfirmation } from '../services/email.service.js';
-import { notifyCustomerViaTelegram } from '../services/telegram.service.js';
+import Complaint from './complaint.model.js';
+import TicketHistory from './ticketHistory.model.js';
+import { sendTicketConfirmation } from '../../services/email.service.js';
+import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
 const generateTicketId = async () => {
   const year = new Date().getFullYear();
