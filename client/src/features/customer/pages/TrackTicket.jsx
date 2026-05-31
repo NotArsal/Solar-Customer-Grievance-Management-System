@@ -92,14 +92,23 @@ export default function TrackTicket() {
 
             <h4 className="text-sm font-medium text-brand-ink mb-4">Ticket History</h4>
             <div className="relative border-l-2 border-brand-hairline-cool ml-3 space-y-6">
-              {history.map((h, i) => (
-                <div key={i} className="relative pl-6">
-                  <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-canvas border-2 border-brand-primary rounded-full"></div>
-                  <p className="text-sm font-medium text-brand-ink">{h.action}</p>
-                  {h.details && <p className="text-sm text-brand-ink-mute mt-1">{h.details}</p>}
-                  <p className="text-xs text-brand-ink-faint mt-1">{new Date(h.timestamp).toLocaleString()} by {h.actor?.name || 'System'}</p>
-                </div>
-              ))}
+              {history.map((h, i) => {
+                let actionText = h.action;
+                if (h.action === 'status_change') actionText = `Status changed to ${h.to_status || 'updated'}`;
+                else if (h.action === 'comment') actionText = 'Update provided';
+                else if (h.action === 'assignment') actionText = 'Ticket assigned';
+                else if (h.action === 'priority_change') actionText = 'Priority updated';
+                else actionText = h.action.replace('_', ' ');
+                
+                return (
+                  <div key={i} className="relative pl-6">
+                    <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-canvas border-2 border-brand-primary rounded-full"></div>
+                    <p className="text-sm font-medium text-brand-ink capitalize">{actionText}</p>
+                    {h.note && <p className="text-sm text-brand-ink-mute mt-1">{h.note}</p>}
+                    <p className="text-xs text-brand-ink-faint mt-1">{new Date(h.timestamp).toLocaleString()} by {h.performed_by?.name || 'System'}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
