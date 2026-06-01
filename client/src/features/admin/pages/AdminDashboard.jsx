@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('tickets');
@@ -13,6 +14,36 @@ export default function AdminDashboard() {
 
   const navigate = useNavigate();
 
+  const fetchTickets = useCallback(async () => {
+    try {
+      const res = await api.get('/v1/complaints');
+      setTickets(res.data);
+    } catch (err) {
+      if (err.response?.status === 401) navigate('/login');
+    }
+  }, [navigate]);
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const res = await api.get('/v1/auth/employees');
+      setEmployees(res.data);
+    } catch (err) {}
+  }, []);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get('/v1/reports/dashboard');
+      setStats(res.data);
+    } catch (err) {}
+  }, []);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await api.get('/v1/routing-categories');
+      setCategories(res.data);
+    } catch (err) {}
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -22,50 +53,25 @@ export default function AdminDashboard() {
     fetchEmployees();
     fetchStats();
     fetchCategories();
-  }, [navigate]);
+  }, [navigate, fetchTickets, fetchEmployees, fetchStats, fetchCategories]);
 
-  const fetchTickets = async () => {
-    try {
-      const res = await api.get('/v1/complaints');
-      setTickets(res.data);
-    } catch (err) {
-      if (err.response?.status === 401) navigate('/login');
-    }
-  };
-
-  const fetchEmployees = async () => {
-    try {
-      const res = await api.get('/v1/auth/employees');
-      setEmployees(res.data);
-    } catch (err) {}
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await api.get('/v1/reports/dashboard');
-      setStats(res.data);
-    } catch (err) {}
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get('/v1/routing-categories');
-      setCategories(res.data);
-    } catch (err) {}
-  };
+  // Functions moved above with useCallback
 
   const handleAssign = async (ticketId, employeeId) => {
+    if (!employeeId) return;
     try {
       await api.patch(`/v1/complaints/${ticketId}/assign`, { assigned_to: employeeId });
+      toast.success('Ticket assigned successfully!');
       fetchTickets();
-    } catch (err) { alert('Failed to assign ticket'); }
+    } catch (err) { toast.error('Failed to assign ticket'); }
   };
 
   const handlePriorityOverride = async (ticketId, priority) => {
     try {
       await api.patch(`/v1/complaints/${ticketId}/priority`, { priority, reason: 'Admin Override' });
+      toast.success('Priority overridden successfully!');
       fetchTickets();
-    } catch (err) { alert('Failed to override priority'); }
+    } catch (err) { toast.error('Failed to override priority'); }
   };
 
   const handleCreateCategory = async (e) => {
@@ -73,15 +79,17 @@ export default function AdminDashboard() {
     try {
       await api.post('/v1/routing-categories', newCat);
       setNewCat({ name: '', priority: 'Medium', assigned_department: 'General', sla_hours: 48 });
+      toast.success('Category created successfully!');
       fetchCategories();
-    } catch (err) { alert('Failed to create category'); }
+    } catch (err) { toast.error('Failed to create category'); }
   };
 
   const handleDeleteCategory = async (id) => {
     try {
       await api.delete(`/v1/routing-categories/${id}`);
+      toast.success('Category deleted successfully!');
       fetchCategories();
-    } catch (err) { alert('Failed to delete category'); }
+    } catch (err) { toast.error('Failed to delete category'); }
   };
 
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
-import { getStatusColor } from '../../../utils/statusColors';
+import toast from 'react-hot-toast';
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function CustomerPortal() {
     setUser(userData);
     fetchCategories();
     fetchMyTickets();
-  }, [navigate]);
+  }, [navigate]); // ignoring fetchCategories/fetchMyTickets in deps to prevent infinite loops unless wrapped in useCallback
 
   const fetchCategories = async () => {
     try {
@@ -38,7 +38,7 @@ export default function CustomerPortal() {
         setFormData(prev => ({ ...prev, category: res.data[0].name }));
       }
     } catch (err) {
-      console.error('Failed to load categories');
+      toast.error('Failed to load categories');
     }
   };
 
@@ -47,7 +47,7 @@ export default function CustomerPortal() {
       const res = await api.get('/v1/complaints');
       setMyTickets(res.data);
     } catch (err) {
-      console.error('Failed to load my tickets');
+      toast.error('Failed to load my tickets');
     }
   };
 
@@ -61,7 +61,7 @@ export default function CustomerPortal() {
         imgFormData.append('image', file);
         
         const imgbbRes = await axios.post(
-          'https://api.imgbb.com/1/upload?key=30abce10cd582f4e4c62e89a27e2c38c',
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
           imgFormData
         );
         attachmentUrl = imgbbRes.data.data.url;
@@ -80,9 +80,10 @@ export default function CustomerPortal() {
 
       const res = await api.post('/v1/complaints', payload);
       setTicketId(res.data.ticket_id);
+      toast.success('Complaint registered successfully!');
       fetchMyTickets(); // Refresh list
     } catch (err) {
-      alert('Error creating complaint: ' + (err.response?.data?.message || err.message));
+      toast.error('Error creating complaint: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsSubmitting(false);
     }

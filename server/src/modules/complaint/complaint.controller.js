@@ -27,6 +27,11 @@ export const createComplaint = asyncHandler(async (req, res) => {
     source
   } = req.body;
 
+  if (!customer_name || !category || !subject || !description) {
+    res.status(400);
+    throw new Error('Please provide all required fields (customer_name, category, subject, description)');
+  }
+
   const ticket_id = await generateTicketId();
 
   // Find routing category

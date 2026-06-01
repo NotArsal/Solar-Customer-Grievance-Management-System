@@ -36,25 +36,36 @@ export const login = asyncHandler(async (req, res) => {
   res.json({ token, user: { id: user._id, name: user.name, role: user.role, email: user.email } });
 });
 
-const otpStore = new Map();
+import Otp from './otp.model.js';
 
 export const sendOTP = asyncHandler(async (req, res) => {
   const { ticket_id, phone } = req.body;
+  if (!ticket_id || !phone) {
+    res.status(400);
+    throw new Error('ticket_id and phone are required');
+  }
   const otp = '123456'; 
-  otpStore.set(`${ticket_id}-${phone}`, otp);
+  const key = `${ticket_id}-${phone}`;
+  await Otp.findOneAndUpdate({ key }, { key, otp }, { upsert: true, new: true });
   res.json({ message: 'OTP sent successfully (Demo: use 123456)' });
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {
   const { ticket_id, phone, otp } = req.body;
-  const storedOtp = otpStore.get(`${ticket_id}-${phone}`);
-  if (storedOtp && storedOtp === otp) {
-    otpStore.delete(`${ticket_id}-${phone}`);
+  if (!ticket_id || !phone || !otp) {
+    res.status(400);
+    throw new Error('ticket_id, phone, and otp are required');
+  }
+  const key = `${ticket_id}-${phone}`;
+  const storedOtp = await Otp.findOne({ key });
+  
+  if (storedOtp && storedOtp.otp === otp) {
+    await Otp.deleteOne({ key });
     const token = jwt.sign({ ticket_id, role: 'customer' }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
   } else {
     res.status(401);
-    throw new Error('Invalid OTP');
+    throw new Error('Invalid or expired OTP');
   }
 });
 

@@ -6,20 +6,24 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const res = await api.post('/v1/auth/login', { email, password });
       const { token, user } = res.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       
-      if (user.role === 'admin') navigate('/admin');
+      if (user.role === 'admin' || user.role === 'superadmin') navigate('/admin');
       else navigate('/employee');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -52,8 +56,9 @@ export default function Login() {
           <button 
             type="submit" 
             className="btn-primary w-full mt-4"
+            disabled={isSubmitting}
           >
-            Authenticate
+            {isSubmitting ? 'Authenticating...' : 'Authenticate'}
           </button>
         </form>
         <div className="mt-6 text-center text-xs text-brand-ink-mute">

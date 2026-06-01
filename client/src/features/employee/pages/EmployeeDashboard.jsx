@@ -1,40 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [updateNote, setUpdateNote] = useState('');
   const [status, setStatus] = useState('');
+  const [reassignReason, setReassignReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReassigning, setIsReassigning] = useState(false);
   const navigate = useNavigate();
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user') || '{}'), []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token || currentUser.role !== 'employee') return navigate('/login');
-    fetchTickets();
-  }, [navigate]);
-
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const res = await api.get('/v1/complaints');
       setTickets(res.data);
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
     }
-  };
+  }, [navigate]);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || currentUser.role !== 'employee') return navigate('/login');
+    fetchTickets();
+  }, [navigate, currentUser, fetchTickets]);
+  // fetchTickets moved above
   const handleUpdate = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       await api.patch(`/v1/complaints/${selectedTicket._id}/status`, { status, note: updateNote });
       setSelectedTicket(null);
       setUpdateNote('');
+      toast.success('Ticket updated successfully!');
       fetchTickets();
     } catch (err) {
-      alert('Failed to update ticket');
+      toast.error('Failed to update ticket');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -99,29 +107,42 @@ export default function EmployeeDashboard() {
                 <textarea required rows="3" className="input-field resize-none" value={updateNote} onChange={e => setUpdateNote(e.target.value)} />
               </div>
               <div className="flex space-x-3 pt-2">
-                <button type="submit" className="btn-primary flex-1">Save Update</button>
-                <button type="button" onClick={() => setSelectedTicket(null)} className="btn-secondary">Close</button>
+                <button type="submit" className="btn-primary flex-1" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Update'}
+                </button>
+                <button type="button" onClick={() => setSelectedTicket(null)} className="btn-secondary" disabled={isSubmitting}>Close</button>
               </div>
             </form>
             
             <div className="mt-8 pt-6 border-t border-brand-hairline-cool">
               <h4 className="text-sm font-medium text-brand-ink mb-3">Request Reassignment</h4>
               <div className="flex space-x-2">
-                <input id="reassignReason" placeholder="Reason for reassignment..." className="input-field text-sm flex-1" />
+                <input 
+                  value={reassignReason} 
+                  onChange={e => setReassignReason(e.target.value)} 
+                  placeholder="Reason for reassignment..." 
+                  className="input-field text-sm flex-1" 
+                  disabled={isReassigning}
+                />
                 <button 
+                  disabled={isReassigning}
                   onClick={async () => {
-                    const reason = document.getElementById('reassignReason').value;
-                    if (!reason) return alert('Provide a reason');
+                    if (!reassignReason) return toast.error('Provide a reason');
+                    setIsReassigning(true);
                     try {
-                      await api.patch(`/v1/complaints/${selectedTicket._id}/reassign-request`, { reason });
-                      alert('Reassignment requested');
-                      document.getElementById('reassignReason').value = '';
+                      await api.patch(`/v1/complaints/${selectedTicket._id}/reassign-request`, { reason: reassignReason });
+                      toast.success('Reassignment requested');
+                      setReassignReason('');
                       fetchTickets();
-                    } catch (err) { alert('Error requesting reassignment'); }
+                    } catch (err) { 
+                      toast.error('Error requesting reassignment'); 
+                    } finally {
+                      setIsReassigning(false);
+                    }
                   }} 
-                  className="bg-brand-canvas text-red-600 font-medium px-4 py-2 rounded-sm border border-red-200 hover:bg-red-50 text-sm transition-colors"
+                  className="bg-brand-canvas text-red-600 font-medium px-4 py-2 rounded-sm border border-red-200 hover:bg-red-50 text-sm transition-colors disabled:opacity-50"
                 >
-                  Request
+                  {isReassigning ? 'Requesting...' : 'Request'}
                 </button>
               </div>
             </div>
