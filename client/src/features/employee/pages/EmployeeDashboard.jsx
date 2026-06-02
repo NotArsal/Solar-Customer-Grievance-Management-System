@@ -94,7 +94,7 @@ export default function EmployeeDashboard() {
 
             <form onSubmit={handleUpdate} className="space-y-4 border-t border-brand-hairline-cool pt-6">
               <h4 className="text-lg font-medium text-brand-ink">Update Status</h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-brand-ink-mute mb-1">New Status</label>
                   <select className="input-field" value={status} onChange={e => setStatus(e.target.value)}>

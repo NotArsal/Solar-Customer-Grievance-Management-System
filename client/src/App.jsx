@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Hero from './pages/Hero';
 import CustomerPortal from './features/customer/pages/CustomerPortal';
@@ -23,27 +24,35 @@ function MainApp() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.clear();
-    // Dispatch a custom event to notify components if needed, or simply navigate
+    setIsMobileMenuOpen(false);
     navigate('/');
-    // For immediate UI update of the header without context, we trigger a re-render
-    window.location.reload(); // Fallback if no context
+    window.location.reload(); 
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <div className="min-h-screen bg-brand-canvas flex flex-col">
       <Toaster position="top-right" />
       <header className="bg-brand-canvas border-b border-brand-hairline sticky top-0 z-50">
-        <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3 cursor-pointer">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          
+          <Link to="/" className="flex items-center space-x-3 cursor-pointer" onClick={closeMobileMenu}>
             <div className="h-8 flex items-center justify-center">
               <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="h-full w-auto object-contain" />
             </div>
-            <span className="text-xl font-medium text-brand-ink tracking-tight">Nature Tek Solar</span>
+            <span className="text-xl font-medium text-brand-ink tracking-tight hidden sm:block">Nature Tek Solar</span>
           </Link>
-          <nav className="flex space-x-6 items-center text-sm font-medium">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex space-x-6 items-center text-sm font-medium">
             <Link to="/portal" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Raise Complaint</Link>
             <Link to="/track" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Track Ticket</Link>
             {!token && <Link to="/auth" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Customer Login</Link>}
@@ -53,10 +62,39 @@ function MainApp() {
             {token && <NotificationBell />}
             {token && <button onClick={handleLogout} className="text-brand-ink-mute hover:text-brand-ink">Logout</button>}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden flex items-center space-x-4">
+            {token && <NotificationBell />}
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-brand-ink focus:outline-none">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-brand-canvas border-b border-brand-hairline">
+            <nav className="flex flex-col px-4 pt-2 pb-4 space-y-3 text-sm font-medium">
+              <Link to="/portal" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Raise Complaint</Link>
+              <Link to="/track" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Track Ticket</Link>
+              {!token && <Link to="/auth" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Customer Login</Link>}
+              {!token && <Link to="/login" onClick={closeMobileMenu} className="block py-2 text-brand-primary font-bold">Staff Login</Link>}
+              {token && user?.role === 'employee' && <Link to="/employee" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Dashboard</Link>}
+              {token && (user?.role === 'admin' || user?.role === 'superadmin') && <Link to="/admin" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Admin</Link>}
+              {token && <button onClick={handleLogout} className="block w-full text-left py-2 text-brand-ink hover:text-brand-primary">Logout</button>}
+            </nav>
+          </div>
+        )}
       </header>
 
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-16">
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8 md:py-16">
         <Routes>
           <Route path="/" element={<Hero />} />
           <Route path="/portal" element={<CustomerPortal />} />

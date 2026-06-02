@@ -189,28 +189,30 @@ export default function AdminDashboard() {
           </div>
           <div className="md:col-span-2">
             <div className="card-feature-light p-0 overflow-hidden">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-brand-canvas-soft border-b border-brand-hairline text-[11px] uppercase tracking-wider text-brand-ink-mute font-medium">
-                    <th className="p-4">Category</th>
-                    <th className="p-4">Priority</th>
-                    <th className="p-4">Department</th>
-                    <th className="p-4">SLA (Hrs)</th>
-                    <th className="p-4">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {categories.map(c => (
-                    <tr key={c._id} className="border-b border-brand-hairline-cool text-brand-ink-secondary hover:bg-brand-canvas-soft">
-                      <td className="p-4 font-medium text-brand-ink">{c.name}</td>
-                      <td className="p-4">{c.priority}</td>
-                      <td className="p-4">{c.assigned_department}</td>
-                      <td className="p-4">{c.sla_hours}</td>
-                      <td className="p-4"><button onClick={() => handleDeleteCategory(c._id)} className="text-red-600 hover:text-red-800 text-xs font-medium">Delete</button></td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-brand-canvas-soft border-b border-brand-hairline text-[11px] uppercase tracking-wider text-brand-ink-mute font-medium">
+                      <th className="p-4">Category</th>
+                      <th className="p-4">Priority</th>
+                      <th className="p-4">Department</th>
+                      <th className="p-4">SLA (Hrs)</th>
+                      <th className="p-4">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="text-sm">
+                    {categories.map(c => (
+                      <tr key={c._id} className="border-b border-brand-hairline-cool text-brand-ink-secondary hover:bg-brand-canvas-soft">
+                        <td className="p-4 font-medium text-brand-ink">{c.name}</td>
+                        <td className="p-4">{c.priority}</td>
+                        <td className="p-4">{c.assigned_department}</td>
+                        <td className="p-4">{c.sla_hours}</td>
+                        <td className="p-4"><button onClick={() => handleDeleteCategory(c._id)} className="text-red-600 hover:text-red-800 text-xs font-medium">Delete</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
