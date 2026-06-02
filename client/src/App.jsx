@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import Hero from './pages/Hero';
+import Home from './features/public/pages/Home';
 import CustomerPortal from './features/customer/pages/CustomerPortal';
 import TrackTicket from './features/customer/pages/TrackTicket';
 import EmployeeDashboard from './features/employee/pages/EmployeeDashboard';
 import AdminDashboard from './features/admin/pages/AdminDashboard';
-import Login from './features/auth/pages/Login';
+import Auth from './features/auth/pages/Auth';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
+import PublicRoute from './features/auth/components/PublicRoute';
 import NotificationBell from './components/NotificationBell';
-import CustomerAuth from './features/customer/pages/CustomerAuth';
 import Footer from './components/Footer';
 import { Toaster } from 'react-hot-toast';
 
@@ -55,8 +55,7 @@ function MainApp() {
           <nav className="hidden lg:flex space-x-6 items-center text-sm font-medium">
             <Link to="/portal" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Raise Complaint</Link>
             <Link to="/track" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Track Ticket</Link>
-            {!token && <Link to="/auth" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Customer Login</Link>}
-            {!token && <Link to="/login" className="btn-primary ml-2">Staff Login</Link>}
+            {!token && <Link to="/auth" className="btn-primary ml-2">Login / Sign Up</Link>}
             {token && user?.role === 'employee' && <Link to="/employee" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Dashboard</Link>}
             {token && (user?.role === 'admin' || user?.role === 'superadmin') && <Link to="/admin" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Admin</Link>}
             {token && <NotificationBell />}
@@ -84,8 +83,7 @@ function MainApp() {
             <nav className="flex flex-col px-4 pt-2 pb-4 space-y-3 text-sm font-medium">
               <Link to="/portal" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Raise Complaint</Link>
               <Link to="/track" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Track Ticket</Link>
-              {!token && <Link to="/auth" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Customer Login</Link>}
-              {!token && <Link to="/login" onClick={closeMobileMenu} className="block py-2 text-brand-primary font-bold">Staff Login</Link>}
+              {!token && <Link to="/auth" onClick={closeMobileMenu} className="block py-2 text-brand-primary font-bold">Login / Sign Up</Link>}
               {token && user?.role === 'employee' && <Link to="/employee" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Dashboard</Link>}
               {token && (user?.role === 'admin' || user?.role === 'superadmin') && <Link to="/admin" onClick={closeMobileMenu} className="block py-2 text-brand-ink hover:text-brand-primary">Admin</Link>}
               {token && <button onClick={handleLogout} className="block w-full text-left py-2 text-brand-ink hover:text-brand-primary">Logout</button>}
@@ -96,11 +94,20 @@ function MainApp() {
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8 md:py-16">
         <Routes>
-          <Route path="/" element={<Hero />} />
+          <Route path="/" element={
+            <PublicRoute>
+              <Home />
+            </PublicRoute>
+          } />
+          <Route path="/auth" element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          } />
+          
           <Route path="/portal" element={<CustomerPortal />} />
-          <Route path="/auth" element={<CustomerAuth />} />
           <Route path="/track" element={<TrackTicket />} />
-          <Route path="/login" element={<Login />} />
+          
           <Route path="/employee" element={
             <ProtectedRoute allowedRoles={['employee', 'admin', 'superadmin']}>
               <EmployeeDashboard />
