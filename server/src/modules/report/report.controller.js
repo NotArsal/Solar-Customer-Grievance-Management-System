@@ -4,9 +4,9 @@ import User from '../user/user.model.js';
 
 export const getDashboardStats = asyncHandler(async (req, res) => {
   const totalComplaints = await Complaint.countDocuments();
-  const pending = await Complaint.countDocuments({ status: 'Pending' });
-  const inProgress = await Complaint.countDocuments({ status: { $in: ['In-Progress', 'On-Hold'] } });
-  const resolved = await Complaint.countDocuments({ status: 'Resolved' });
+  const pending = await Complaint.countDocuments({ status: 'pending' });
+  const inProgress = await Complaint.countDocuments({ status: 'in-progress' });
+  const resolved = await Complaint.countDocuments({ status: 'resolved' });
   const breached = await Complaint.countDocuments({ is_sla_breached: true });
 
   const categoryDistribution = await Complaint.aggregate([

@@ -7,7 +7,7 @@ export const checkSLA = async () => {
   console.log('Running SLA checker...');
   try {
     const breached = await Complaint.find({
-      status: { $in: ['Pending', 'In-Progress', 'On-Hold'] },
+      status: { $in: ['pending', 'in-progress'] },
       sla_due_at: { $lt: new Date() },
       is_sla_breached: false
     });

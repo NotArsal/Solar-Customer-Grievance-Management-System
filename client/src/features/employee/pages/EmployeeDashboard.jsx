@@ -98,7 +98,10 @@ export default function EmployeeDashboard() {
                 <div>
                   <label className="block text-xs font-medium text-brand-ink-mute mb-1">New Status</label>
                   <select className="input-field" value={status} onChange={e => setStatus(e.target.value)}>
-                    <option>Pending</option><option>In-Progress</option><option>Resolved</option><option>Closed</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In-Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="unresolved">Unresolved</option>
                   </select>
                 </div>
               </div>
