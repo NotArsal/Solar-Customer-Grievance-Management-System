@@ -8,9 +8,9 @@ import { sendTicketConfirmation } from '../../services/email.service.js';
 import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
 const generateTicketId = async () => {
-  const year = new Date().getFullYear();
-  const count = await Complaint.countDocuments();
-  return `NTS-${year}-${String(count + 1).padStart(5, '0')}`;
+  const timestampPart = Date.now().toString().slice(-4);
+  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  return `NTS-${timestampPart}-${randomPart}`;
 };
 
 export const createComplaint = asyncHandler(async (req, res) => {
@@ -77,7 +77,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
     priority,
     source,
     ticket_id,
-    status: 'Pending',
+    status: 'pending',
     assigned_to,
     sla_due_at
   });
@@ -86,7 +86,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
   const history = new TicketHistory({
     ticket_id,
     action: 'status_change',
-    to_status: 'Pending',
+    to_status: 'pending',
     note: 'Complaint registered successfully',
     is_public: true
   });
@@ -154,8 +154,8 @@ export const updateStatus = asyncHandler(async (req, res) => {
   
   const from_status = complaint.status;
   complaint.status = status;
-  if (status === 'Resolved') complaint.resolved_at = new Date();
-  if (status === 'Closed') {
+  if (status === 'resolved') complaint.resolved_at = new Date();
+  if (status === 'unresolved') {
     complaint.closed_at = new Date();
     if (complaint.assigned_to) {
       const staffMember = await User.findById(complaint.assigned_to);
