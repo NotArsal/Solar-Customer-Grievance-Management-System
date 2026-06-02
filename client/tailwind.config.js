@@ -8,21 +8,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-primary': '#3ecf8e',
-        'brand-primary-deep': '#24b47e',
-        'brand-primary-soft': '#4ade80',
+        'brand-primary': '#5fa33b', // Leaf green from logo
+        'brand-primary-deep': '#4a822b',
+        'brand-primary-soft': '#7cc155',
+        'brand-secondary': '#1d70a2', // Solar panel blue
+        'brand-accent': '#f49e25', // Sun orange
         'brand-canvas': '#ffffff',
-        'brand-canvas-soft': '#fafafa',
-        'brand-canvas-night': '#1c1c1c',
-        'brand-canvas-night-soft': '#202020',
-        'brand-ink': '#171717',
-        'brand-ink-secondary': '#212121',
-        'brand-ink-mute': '#707070',
-        'brand-ink-mute-2': '#9a9a9a',
-        'brand-ink-faint': '#b2b2b2',
-        'brand-hairline': '#dfdfdf',
-        'brand-hairline-strong': '#c7c7c7',
-        'brand-hairline-cool': '#ededed',
+        'brand-canvas-soft': '#f4f7f9', // Soft blueish gray
+        'brand-canvas-night': '#0f172a',
+        'brand-canvas-night-soft': '#1e293b',
+        'brand-ink': '#1b3149', // Dark navy text from logo
+        'brand-ink-secondary': '#334c68',
+        'brand-ink-mute': '#64748b',
+        'brand-ink-mute-2': '#94a3b8',
+        'brand-ink-faint': '#cbd5e1',
+        'brand-hairline': '#e2e8f0',
+        'brand-hairline-strong': '#cbd5e1',
+        'brand-hairline-cool': '#f1f5f9',
       },
       fontFamily: {
         sans: ['"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],

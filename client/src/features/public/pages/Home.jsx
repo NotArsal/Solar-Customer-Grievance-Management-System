@@ -36,14 +36,14 @@ export default function Home() {
         <div className="relative w-full h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-level-3 border border-brand-hairline bg-white/40 backdrop-blur-xl flex items-center justify-center group">
           {/* Decorative background blur behind image */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-primary/20 blur-[80px] rounded-full z-0 pointer-events-none group-hover:bg-brand-primary/30 transition-all duration-700"></div>
-          <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-yellow-400/20 blur-[60px] rounded-full z-0 pointer-events-none"></div>
+          <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-brand-accent/20 blur-[60px] rounded-full z-0 pointer-events-none"></div>
 
           <div className="relative z-10 w-[80%] h-[70%] border border-brand-hairline-cool bg-white rounded-xl shadow-level-1 overflow-hidden flex flex-col transition-transform duration-500 group-hover:scale-105">
             {/* Fake UI Header */}
             <div className="h-10 border-b border-brand-hairline-cool bg-brand-canvas-soft flex items-center px-4 space-x-2">
               <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-brand-accent"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-brand-primary"></div>
             </div>
             {/* Fake UI Content */}
             <div className="flex-1 p-6 space-y-4">
