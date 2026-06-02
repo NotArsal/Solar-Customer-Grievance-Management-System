@@ -38,8 +38,8 @@ function MainApp() {
       <header className="bg-brand-canvas border-b border-brand-hairline sticky top-0 z-50">
         <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 cursor-pointer">
-            <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
-              <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="w-full h-full object-contain" />
+            <div className="h-8 flex items-center justify-center">
+              <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="h-full w-auto object-contain" />
             </div>
             <span className="text-xl font-medium text-brand-ink tracking-tight">Nature Tek Solar</span>
           </Link>

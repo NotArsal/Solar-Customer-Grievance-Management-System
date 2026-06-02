@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 export default function Hero() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 animate-fade-in">
-      <div className="w-20 h-20 mb-8 overflow-hidden rounded-full border-4 border-brand-canvas shadow-level-1">
-        <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="w-full h-full object-cover" />
+      <div className="h-24 mb-8 flex justify-center">
+        <img src="/company-logo.png" alt="Nature Tek Solar Logo" className="h-full w-auto object-contain drop-shadow-sm" />
       </div>
       
       <h1 className="text-[48px] md:text-[64px] tracking-display-xl font-medium text-brand-ink leading-tight mb-6 max-w-4xl">
