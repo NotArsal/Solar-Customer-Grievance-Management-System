@@ -4,6 +4,32 @@ import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
+const productIssueMapping = {
+  "Solar Panel": [
+    "Physical Damage (Cracks/Shatter)", 
+    "Low Energy Output", 
+    "Sparking / Wiring Issue", 
+    "Debris / Shading Issue"
+  ],
+  "Inverter": [
+    "Not Turning On", 
+    "Error Code Displayed", 
+    "Wi-Fi / Monitoring Disconnect", 
+    "Overheating"
+  ],
+  "Battery": [
+    "Not Holding Charge", 
+    "Battery Replacement", 
+    "Swelling / Leaking", 
+    "Fast Discharging"
+  ],
+  "Service": [
+    "Billing Query", 
+    "Installation Check", 
+    "Other"
+  ]
+};
+
 export default function CustomerPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -11,7 +37,7 @@ export default function CustomerPortal() {
   const [myTickets, setMyTickets] = useState([]);
   
   const [formData, setFormData] = useState({
-    product_type: 'Solar Panel', category: '', subject: '', description: '', attachments: []
+    product_type: '', category: '', subject: '', description: '', attachments: []
   });
   const [file, setFile] = useState(null);
   const [ticketId, setTicketId] = useState(null);
@@ -31,15 +57,22 @@ export default function CustomerPortal() {
   }, [navigate]); // ignoring fetchCategories/fetchMyTickets in deps to prevent infinite loops unless wrapped in useCallback
 
   const fetchCategories = async () => {
+    // We now use productIssueMapping for frontend UI mapping.
+    // We still fetch the API categories to make sure backend syncs.
     try {
       const res = await api.get('/v1/routing-categories');
       setCategories(res.data);
-      if (res.data.length > 0) {
-        setFormData(prev => ({ ...prev, category: res.data[0].name }));
-      }
     } catch (err) {
       toast.error('Failed to load categories');
     }
+  };
+
+  const handleProductChange = (e) => {
+    setFormData({
+      ...formData,
+      product_type: e.target.value,
+      category: '' // Reset the issue category when product changes
+    });
   };
 
   const fetchMyTickets = async () => {
@@ -133,14 +166,34 @@ export default function CustomerPortal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-medium text-brand-ink-mute mb-2">Product Type</label>
-                  <select className="input-field" onChange={e => setFormData({...formData, product_type: e.target.value})} disabled={isSubmitting}>
-                    <option>Solar Panel</option><option>Inverter</option><option>Battery</option><option>Service</option>
+                  <select 
+                    className="input-field" 
+                    value={formData.product_type} 
+                    onChange={handleProductChange} 
+                    disabled={isSubmitting}
+                    required
+                  >
+                    <option value="">Select a Product</option>
+                    {Object.keys(productIssueMapping).map(product => (
+                      <option key={product} value={product}>{product}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-brand-ink-mute mb-2">Issue Category</label>
-                  <select className="input-field" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} disabled={isSubmitting}>
-                    {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+                  <select 
+                    className="input-field disabled:bg-gray-100 disabled:cursor-not-allowed" 
+                    value={formData.category} 
+                    onChange={e => setFormData({...formData, category: e.target.value})} 
+                    disabled={!formData.product_type || isSubmitting}
+                    required
+                  >
+                    <option value="">
+                      {formData.product_type ? "Select the specific issue" : "Select a product first"}
+                    </option>
+                    {formData.product_type && productIssueMapping[formData.product_type].map(issue => (
+                      <option key={issue} value={issue}>{issue}</option>
+                    ))}
                   </select>
                 </div>
               </div>
