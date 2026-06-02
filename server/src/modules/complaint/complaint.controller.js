@@ -2,16 +2,23 @@ import mongoose from 'mongoose';
 import asyncHandler from 'express-async-handler';
 import Complaint from './complaint.model.js';
 import TicketHistory from './ticketHistory.model.js';
+import Counter from './counter.model.js';
 import User from '../user/user.model.js';
 import Category from '../routing/category.model.js';
 import { sendTicketConfirmation } from '../../services/email.service.js';
 import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
 const generateTicketId = async () => {
-  const year = new Date().getFullYear();
-  // Generate a 6-character random alphanumeric string for infinite scale uniqueness
-  const uniquePart = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `NTS-${year}-${uniquePart}`;
+  const counter = await Counter.findOneAndUpdate(
+    { id: 'ticket_seq' },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  // If this is the very first ticket, we want to start from 0 if the user requested NTS-0000-0000.
+  // Wait, the increment returns seq: 1 first time. If we want 0-based:
+  const seqNum = counter.seq - 1;
+  const zeroPadded = seqNum.toString().padStart(4, '0');
+  return `NTS-0000-${zeroPadded}`;
 };
 
 export const createComplaint = asyncHandler(async (req, res) => {
