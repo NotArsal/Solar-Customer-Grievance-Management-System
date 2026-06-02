@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import Hero from './pages/Hero';
 import CustomerPortal from './features/customer/pages/CustomerPortal';
 import TrackTicket from './features/customer/pages/TrackTicket';
 import EmployeeDashboard from './features/employee/pages/EmployeeDashboard';
@@ -43,7 +44,7 @@ function MainApp() {
             <span className="text-xl font-medium text-brand-ink tracking-tight">Nature Tek Solar</span>
           </div>
           <nav className="flex space-x-6 items-center text-sm font-medium">
-            <Link to="/" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Raise Complaint</Link>
+            <Link to="/portal" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Raise Complaint</Link>
             <Link to="/track" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Track Ticket</Link>
             {!token && <Link to="/auth" className="text-brand-ink-mute hover:text-brand-ink transition-colors">Customer Login</Link>}
             {!token && <Link to="/login" className="btn-primary ml-2">Staff Login</Link>}
@@ -57,7 +58,8 @@ function MainApp() {
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-16">
         <Routes>
-          <Route path="/" element={<CustomerPortal />} />
+          <Route path="/" element={<Hero />} />
+          <Route path="/portal" element={<CustomerPortal />} />
           <Route path="/auth" element={<CustomerAuth />} />
           <Route path="/track" element={<TrackTicket />} />
           <Route path="/login" element={<Login />} />

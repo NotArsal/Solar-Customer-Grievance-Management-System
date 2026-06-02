@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,18 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (token && user) {
+      if (user.role === 'admin' || user.role === 'superadmin') {
+        navigate('/admin');
+      } else if (user.role === 'employee') {
+        navigate('/employee');
+      }
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
