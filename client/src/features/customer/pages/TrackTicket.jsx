@@ -90,22 +90,57 @@ export default function TrackTicket() {
               </div>
             </div>
 
-            <h4 className="text-sm font-medium text-brand-ink mb-4">Ticket History</h4>
-            <div className="relative border-l-2 border-brand-hairline-cool ml-3 space-y-6">
+            <h4 className="text-lg font-medium text-brand-ink mb-6">Timeline</h4>
+            <div className="relative border-l-2 border-brand-hairline-strong ml-4 space-y-8">
               {history.map((h, i) => {
+                const isLatest = i === 0;
                 let actionText = h.action;
-                if (h.action === 'status_change') actionText = `Status changed to ${h.to_status || 'updated'}`;
-                else if (h.action === 'comment') actionText = 'Update provided';
-                else if (h.action === 'assignment') actionText = 'Ticket assigned';
-                else if (h.action === 'priority_change') actionText = 'Priority updated';
-                else actionText = h.action.replace('_', ' ');
+                let Icon = null;
+                let iconColor = "text-brand-ink-mute";
+                let bgColor = "bg-brand-canvas-soft";
+                let borderColor = "border-brand-hairline-strong";
+
+                if (h.action === 'status_change') {
+                  actionText = `Status updated to ${h.to_status}`;
+                  iconColor = isLatest ? "text-white" : "text-brand-primary";
+                  bgColor = isLatest ? "bg-brand-primary" : "bg-brand-canvas";
+                  borderColor = "border-brand-primary";
+                  Icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+                } else if (h.action === 'comment' || h.action === 'note') {
+                  actionText = 'New update provided';
+                  Icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
+                } else if (h.action === 'assignment') {
+                  actionText = 'Ticket reassigned';
+                  Icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+                } else if (h.action === 'priority_change') {
+                  actionText = 'Priority updated';
+                  borderColor = "border-red-400";
+                  iconColor = "text-red-500";
+                  Icon = <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+                } else {
+                  actionText = h.action.replace('_', ' ');
+                  Icon = <div className="w-2.5 h-2.5 rounded-full bg-brand-ink-mute"></div>;
+                }
                 
                 return (
-                  <div key={i} className="relative pl-6">
-                    <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-canvas border-2 border-brand-primary rounded-full"></div>
-                    <p className="text-sm font-medium text-brand-ink capitalize">{actionText}</p>
-                    {h.note && <p className="text-sm text-brand-ink-mute mt-1">{h.note}</p>}
-                    <p className="text-xs text-brand-ink-faint mt-1">{new Date(h.timestamp).toLocaleString()} by {h.performed_by?.name || 'System'}</p>
+                  <div key={i} className={`relative pl-8 group ${isLatest ? '' : 'opacity-80 hover:opacity-100 transition-opacity'}`}>
+                    <div className={`absolute -left-[17px] top-0 w-8 h-8 rounded-full border-2 flex items-center justify-center shadow-sm ${bgColor} ${borderColor} ${iconColor}`}>
+                      {Icon}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
+                      <p className={`text-sm font-semibold capitalize ${isLatest ? 'text-brand-ink' : 'text-brand-ink-secondary'}`}>{actionText}</p>
+                      <p className="text-xs text-brand-ink-mute whitespace-nowrap mt-1 sm:mt-0 font-medium">
+                        {new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    {h.note && (
+                      <div className="mt-2 p-3 bg-brand-canvas-soft border border-brand-hairline-cool rounded-lg shadow-sm text-sm text-brand-ink leading-relaxed">
+                        {h.note}
+                      </div>
+                    )}
+                    <p className="text-[11px] font-medium text-brand-ink-mute mt-2">
+                      by {h.performed_by?.name || 'System Auto-Routing'}
+                    </p>
                   </div>
                 );
               })}
