@@ -165,7 +165,13 @@ export const updateStatus = asyncHandler(async (req, res) => {
       }
     }
   }
-  await complaint.save();
+  await Complaint.findByIdAndUpdate(id, {
+    $set: {
+      status: complaint.status,
+      resolved_at: complaint.resolved_at,
+      closed_at: complaint.closed_at
+    }
+  });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -217,9 +223,12 @@ export const assignTicket = asyncHandler(async (req, res) => {
     }
   }
   
-  complaint.assigned_to = assignedToId;
-  complaint.reassignment_request = { is_requested: false, reason: '' };
-  await complaint.save();
+  await Complaint.findByIdAndUpdate(id, {
+    $set: {
+      assigned_to: assignedToId,
+      reassignment_request: { is_requested: false, reason: '' }
+    }
+  });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -247,8 +256,9 @@ export const requestReassignment = asyncHandler(async (req, res) => {
     throw new Error('Cannot request reassignment for a ticket not assigned to you');
   }
 
-  complaint.reassignment_request = { is_requested: true, reason };
-  await complaint.save();
+  await Complaint.findByIdAndUpdate(id, {
+    $set: { reassignment_request: { is_requested: true, reason } }
+  });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -286,7 +296,12 @@ export const overridePriority = asyncHandler(async (req, res) => {
   newSla.setHours(newSla.getHours() + newHours);
   complaint.sla_due_at = newSla;
 
-  await complaint.save();
+  await Complaint.findByIdAndUpdate(id, {
+    $set: {
+      priority,
+      sla_due_at: newSla
+    }
+  });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
