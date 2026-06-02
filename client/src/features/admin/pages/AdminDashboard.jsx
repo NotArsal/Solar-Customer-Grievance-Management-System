@@ -156,7 +156,10 @@ export default function AdminDashboard() {
                     </td>
                     <td className="p-4">
                       {t.reassignment_request?.is_requested ? (
-                        <div className="text-[10px] leading-tight text-red-600 font-medium border border-red-200 bg-red-50 rounded-sm p-1 max-w-[120px] break-words">
+                        <div 
+                          className="text-[10px] leading-tight text-red-600 font-medium border border-red-200 bg-red-50 rounded-sm p-1 max-w-[160px] break-words line-clamp-3" 
+                          title={t.reassignment_request.reason}
+                        >
                           REQUESTED: {t.reassignment_request.reason}
                         </div>
                       ) : <span className="text-brand-ink-faint text-xs">-</span>}
