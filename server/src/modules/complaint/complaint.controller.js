@@ -198,8 +198,10 @@ export const assignTicket = asyncHandler(async (req, res) => {
     throw new Error('Ticket not found');
   }
 
+  const assignedToId = assigned_to === '' ? null : assigned_to;
+
   // Handle active count updates
-  if (complaint.assigned_to && complaint.assigned_to.toString() !== assigned_to) {
+  if (complaint.assigned_to && complaint.assigned_to.toString() !== assignedToId) {
     const oldStaff = await User.findById(complaint.assigned_to);
     if (oldStaff && oldStaff.activeTicketsCount > 0) {
       oldStaff.activeTicketsCount -= 1;
@@ -207,15 +209,15 @@ export const assignTicket = asyncHandler(async (req, res) => {
     }
   }
   
-  if (assigned_to && (!complaint.assigned_to || complaint.assigned_to.toString() !== assigned_to)) {
-    const newStaff = await User.findById(assigned_to);
+  if (assignedToId && (!complaint.assigned_to || complaint.assigned_to.toString() !== assignedToId)) {
+    const newStaff = await User.findById(assignedToId);
     if (newStaff) {
       newStaff.activeTicketsCount += 1;
       await newStaff.save();
     }
   }
   
-  complaint.assigned_to = assigned_to;
+  complaint.assigned_to = assignedToId;
   complaint.reassignment_request = { is_requested: false, reason: '' };
   await complaint.save();
 
