@@ -91,7 +91,7 @@ export default function TrackTicket() {
             </div>
 
             <h4 className="text-lg font-medium text-brand-ink mb-6">Timeline</h4>
-            <div className="relative border-l-2 border-brand-hairline-strong ml-4 space-y-8">
+            <div className={`relative border-l-2 ml-4 space-y-8 ${ticket.status === 'resolved' ? 'border-brand-primary' : ticket.status === 'in-progress' ? 'border-brand-secondary' : ticket.status === 'unresolved' ? 'border-red-500' : 'border-brand-hairline-strong'}`}>
               {history.map((h, i) => {
                 const isLatest = i === 0;
                 let actionText = h.action;

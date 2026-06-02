@@ -113,9 +113,18 @@ export default function CustomerPortal() {
             <div className="p-6 bg-brand-canvas-soft rounded-md border border-brand-hairline-cool animate-fade-in">
               <h3 className="text-xl font-medium mb-2 text-brand-ink">Complaint Registered!</h3>
               <p className="text-sm text-brand-ink-mute">Your issue has been successfully submitted to our team.</p>
-              <div className="mt-6 p-4 bg-brand-canvas shadow-level-1 rounded-md border border-brand-hairline">
-                <p className="text-xs font-medium uppercase tracking-wider text-brand-ink-mute mb-1">Your Ticket ID</p>
-                <p className="text-[28px] tracking-display-md font-medium text-brand-ink">{ticketId}</p>
+              <div className="mt-6 p-4 bg-brand-canvas shadow-level-1 rounded-md border border-brand-hairline flex justify-between items-center">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-brand-ink-mute mb-1">Your Ticket ID</p>
+                  <p className="text-[28px] tracking-display-md font-medium text-brand-ink">{ticketId}</p>
+                </div>
+                <button 
+                  onClick={() => { navigator.clipboard.writeText(ticketId); toast.success('Ticket ID copied to clipboard!'); }}
+                  className="p-3 bg-brand-canvas-soft border border-brand-hairline hover:bg-brand-hairline-cool hover:text-brand-primary text-brand-ink-mute rounded-md transition-colors"
+                  title="Copy Ticket ID"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                </button>
               </div>
               <button onClick={resetForm} className="mt-6 btn-secondary">File Another Issue</button>
             </div>
