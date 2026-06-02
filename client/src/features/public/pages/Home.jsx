@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function Home() {
   return (
     <div className="relative overflow-hidden flex flex-col justify-center items-center min-h-[75vh] animate-fade-in px-4 sm:px-6">
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-canvas via-brand-canvas-soft to-[#e8f5e9] opacity-50 z-[-1]" />
+      <div className="absolute inset-0 bg-brand-canvas-soft z-[-1]" />
       
       <div className="max-w-[1280px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
         
