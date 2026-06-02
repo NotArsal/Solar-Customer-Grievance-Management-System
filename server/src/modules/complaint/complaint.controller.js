@@ -48,11 +48,19 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
   // Auto-Assign based on routing department
   let assigned_to = null;
-  const staffMember = await User.findOne({ 
+  let staffMember = await User.findOne({ 
       role: 'employee', 
       specialization: categoryDoc.assigned_department, 
       is_active: true 
   }).sort({ activeTicketsCount: 1 });
+
+  // Fallback: If no staff found for that specific department, assign to any active employee with least tickets
+  if (!staffMember) {
+      staffMember = await User.findOne({ 
+          role: 'employee', 
+          is_active: true 
+      }).sort({ activeTicketsCount: 1 });
+  }
 
   if (staffMember) {
       assigned_to = staffMember._id;
