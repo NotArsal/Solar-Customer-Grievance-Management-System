@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function Home() {
   return (
     <div className="relative overflow-hidden flex flex-col justify-center items-center min-h-[75vh] animate-fade-in px-4 sm:px-6">
-      <div className="absolute inset-0 bg-brand-canvas-soft z-[-1]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-canvas via-brand-canvas-soft to-[#e8f5e9] opacity-50 z-[-1]" />
       
       <div className="max-w-[1280px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
         
@@ -36,14 +36,14 @@ export default function Home() {
         <div className="relative w-full h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-level-3 border border-brand-hairline bg-white/40 backdrop-blur-xl flex items-center justify-center group">
           {/* Decorative background blur behind image */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-primary/20 blur-[80px] rounded-full z-0 pointer-events-none group-hover:bg-brand-primary/30 transition-all duration-700"></div>
-          <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-brand-accent/20 blur-[60px] rounded-full z-0 pointer-events-none"></div>
+          <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-yellow-400/20 blur-[60px] rounded-full z-0 pointer-events-none"></div>
 
           <div className="relative z-10 w-[80%] h-[70%] border border-brand-hairline-cool bg-white rounded-xl shadow-level-1 overflow-hidden flex flex-col transition-transform duration-500 group-hover:scale-105">
             {/* Fake UI Header */}
             <div className="h-10 border-b border-brand-hairline-cool bg-brand-canvas-soft flex items-center px-4 space-x-2">
               <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-brand-accent"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-brand-primary"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
             </div>
             {/* Fake UI Content */}
             <div className="flex-1 p-6 space-y-4">
