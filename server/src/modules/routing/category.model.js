@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   priority: { type: String, enum: ['High', 'Medium', 'Low'], required: true },
   assigned_department: { type: String, required: true },
   sla_hours: { type: Number, required: true },

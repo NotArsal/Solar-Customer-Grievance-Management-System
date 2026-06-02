@@ -43,7 +43,12 @@ export const createComplaint = asyncHandler(async (req, res) => {
   const ticket_id = await generateTicketId();
 
   // Find routing category
-  const categoryDoc = await Category.findOne({ name: category, is_active: true });
+  // Search by both name and assigned_department to correctly route duplicate names (e.g., "Other")
+  const categoryDoc = await Category.findOne({ 
+    name: category, 
+    assigned_department: product_type, 
+    is_active: true 
+  });
   if (!categoryDoc) {
     res.status(400);
     throw new Error('Invalid or inactive category selected');

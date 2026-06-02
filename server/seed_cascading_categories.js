@@ -11,6 +11,8 @@ const seedCategories = async () => {
     }
     await mongoose.connect(process.env.MONGO_URI);
     
+    // Drop the unique name index if it exists
+    await Category.collection.dropIndex("name_1").catch(() => {});
     // First, clear old categories to prevent clutter
     await Category.deleteMany({});
 
@@ -19,19 +21,22 @@ const seedCategories = async () => {
         "Physical Damage (Cracks/Shatter)", 
         "Low Energy Output", 
         "Sparking / Wiring Issue", 
-        "Debris / Shading Issue"
+        "Debris / Shading Issue",
+        "Other"
       ],
       "Inverter": [
         "Not Turning On", 
         "Error Code Displayed", 
         "Wi-Fi / Monitoring Disconnect", 
-        "Overheating"
+        "Overheating",
+        "Other"
       ],
       "Battery": [
         "Not Holding Charge", 
         "Battery Replacement", 
         "Swelling / Leaking", 
-        "Fast Discharging"
+        "Fast Discharging",
+        "Other"
       ],
       "Service": [
         "Billing Query", 

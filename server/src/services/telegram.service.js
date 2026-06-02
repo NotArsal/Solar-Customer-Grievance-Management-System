@@ -2,23 +2,26 @@ import TelegramBot from 'node-telegram-bot-api';
 import Complaint from '../modules/complaint/complaint.model.js';
 import TicketHistory from '../modules/complaint/ticketHistory.model.js';
 
-// Enabled polling: true so the bot actively fetches messages
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const isDummyToken = !TELEGRAM_TOKEN || TELEGRAM_TOKEN.includes('dummy') || TELEGRAM_TOKEN === '1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-// Setup autocomplete commands menu for Telegram
-bot.setMyCommands([
-  { command: '/start', description: 'Start the bot and see instructions' },
-  { command: '/raise', description: 'Raise a new complaint' },
-  { command: '/track', description: 'Track an existing ticket (e.g. /track NTS-1234)' },
-  { command: '/cancel', description: 'Cancel current complaint registration' }
-]);
+let bot = null;
 
-console.log('✅ Telegram Bot is running in polling mode...');
+if (!isDummyToken) {
+  bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+  bot.setMyCommands([
+    { command: '/start', description: 'Start the bot and see instructions' },
+    { command: '/raise', description: 'Raise a new complaint' },
+    { command: '/track', description: 'Track an existing ticket (e.g. /track NTS-1234)' },
+    { command: '/cancel', description: 'Cancel current complaint registration' }
+  ]).catch(err => console.error('Telegram command setup error:', err.message));
+  console.log('✅ Telegram Bot is running in polling mode...');
+} else {
+  console.log('⚠️ Telegram Bot disabled (dummy token detected).');
+}
 
-// In-memory session store for multi-step conversations
-const sessions = new Map();
-
-bot.on('message', async (msg) => {
+if (bot) {
+  bot.on('message', async (msg) => {
   try {
     const chatId = msg.chat.id;
     // Extract text from standard message or from media caption
@@ -183,6 +186,7 @@ bot.on('message', async (msg) => {
     console.error('Telegram Bot Error:', error);
   }
 });
+}
 
 // Mock webhook handler
 export const handleTelegramWebhook = async (req, res) => {
@@ -191,7 +195,7 @@ export const handleTelegramWebhook = async (req, res) => {
 
 // Outbound Notification Service
 export const notifyCustomerViaTelegram = async (ticket, message) => {
-  if (ticket.source === 'telegram' && ticket.telegram_chat_id) {
+  if (bot && ticket.source === 'telegram' && ticket.telegram_chat_id) {
     try {
       await bot.sendMessage(ticket.telegram_chat_id, `🔔 **Ticket Update (${ticket.ticket_id})**\n\n${message}`, { parse_mode: 'Markdown' });
     } catch (err) {

@@ -9,19 +9,22 @@ const productIssueMapping = {
     "Physical Damage (Cracks/Shatter)", 
     "Low Energy Output", 
     "Sparking / Wiring Issue", 
-    "Debris / Shading Issue"
+    "Debris / Shading Issue",
+    "Other"
   ],
   "Inverter": [
     "Not Turning On", 
     "Error Code Displayed", 
     "Wi-Fi / Monitoring Disconnect", 
-    "Overheating"
+    "Overheating",
+    "Other"
   ],
   "Battery": [
     "Not Holding Charge", 
     "Battery Replacement", 
     "Swelling / Leaking", 
-    "Fast Discharging"
+    "Fast Discharging",
+    "Other"
   ],
   "Service": [
     "Billing Query", 
