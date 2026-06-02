@@ -8,9 +8,10 @@ import { sendTicketConfirmation } from '../../services/email.service.js';
 import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
 const generateTicketId = async () => {
-  const timestampPart = Date.now().toString().slice(-4);
-  const randomPart = Math.floor(1000 + Math.random() * 9000);
-  return `NTS-${timestampPart}-${randomPart}`;
+  const year = new Date().getFullYear();
+  // Generate a 6-character random alphanumeric string for infinite scale uniqueness
+  const uniquePart = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `NTS-${year}-${uniquePart}`;
 };
 
 export const createComplaint = asyncHandler(async (req, res) => {

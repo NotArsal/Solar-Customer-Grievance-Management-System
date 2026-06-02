@@ -45,7 +45,7 @@ export default function TrackTicket() {
         <form onSubmit={handleSearch} className="flex space-x-3 mb-8">
           <input 
             type="text" 
-            placeholder="Enter Ticket ID (e.g. NTS-2026-0001)" 
+            placeholder="Enter Ticket ID (e.g. NTS-2026-X8F2A9)" 
             className="input-field flex-1 text-sm font-mono tracking-wider" 
             value={ticketId} 
             onChange={e => setTicketId(e.target.value)} 
