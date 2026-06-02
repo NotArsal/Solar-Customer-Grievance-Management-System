@@ -67,8 +67,13 @@ export default function CustomerPortal() {
         attachmentUrl = imgbbRes.data.data.url;
       }
 
+      const generatedSubject = formData.description.length > 50 
+        ? formData.description.substring(0, 47) + '...'
+        : formData.description;
+
       const payload = { 
         ...formData,
+        subject: generatedSubject || 'Issue Report',
         customer_name: user.name,
         customer_email: user.email,
         customer_phone: user.phone || 'N/A'
@@ -131,10 +136,7 @@ export default function CustomerPortal() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-brand-ink-mute mb-2">Subject</label>
-                <input required placeholder="E.g., Inverter showing red light" className="input-field" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} disabled={isSubmitting} />
-              </div>
+
               
               <div>
                 <label className="block text-xs font-medium text-brand-ink-mute mb-2">Description</label>
