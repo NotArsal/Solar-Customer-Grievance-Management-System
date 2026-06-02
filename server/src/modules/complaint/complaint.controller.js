@@ -242,7 +242,7 @@ export const requestReassignment = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Ticket not found');
   }
-  if (complaint.assigned_to.toString() !== req.user.id) {
+  if (!complaint.assigned_to || complaint.assigned_to.toString() !== req.user.id) {
     res.status(403);
     throw new Error('Cannot request reassignment for a ticket not assigned to you');
   }
