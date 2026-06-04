@@ -105,7 +105,11 @@ function MainApp() {
             </PublicRoute>
           } />
           
-          <Route path="/portal" element={<CustomerPortal />} />
+          <Route path="/portal" element={
+            <ProtectedRoute allowedRoles={['customer']}>
+              <CustomerPortal />
+            </ProtectedRoute>
+          } />
           <Route path="/track" element={<TrackTicket />} />
           
           <Route path="/employee" element={

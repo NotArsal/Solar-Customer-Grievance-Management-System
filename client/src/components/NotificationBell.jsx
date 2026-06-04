@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../config/axios';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -19,6 +20,8 @@ export default function NotificationBell() {
       setNotifications(res.data);
     } catch (err) {
       console.error('Failed to fetch notifications');
+      // Only toast on manual fetch, interval might be too noisy. We'll leave it as is or add a silent failure.
+      // Actually, since this runs on an interval, we shouldn't toast on every background failure, but I will toast for markAsRead.
     }
   };
 
@@ -30,6 +33,7 @@ export default function NotificationBell() {
       if (ticketId) navigate(`/track?id=${ticketId}`);
     } catch (err) {
       console.error(err);
+      toast.error('Failed to mark notification as read');
     }
   };
 
@@ -39,6 +43,7 @@ export default function NotificationBell() {
       setNotifications(notifications.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.error(err);
+      toast.error('Failed to mark all as read');
     }
   };
 

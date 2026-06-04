@@ -27,21 +27,27 @@ export default function AdminDashboard() {
     try {
       const res = await api.get('/v1/auth/employees');
       setEmployees(res.data);
-    } catch (err) {}
+    } catch (err) {
+      toast.error('Failed to load employees');
+    }
   }, []);
 
   const fetchStats = useCallback(async () => {
     try {
       const res = await api.get('/v1/reports/dashboard');
       setStats(res.data);
-    } catch (err) {}
+    } catch (err) {
+      toast.error('Failed to load dashboard stats');
+    }
   }, []);
 
   const fetchCategories = useCallback(async () => {
     try {
       const res = await api.get('/v1/routing-categories');
       setCategories(res.data);
-    } catch (err) {}
+    } catch (err) {
+      toast.error('Failed to load routing categories');
+    }
   }, []);
 
   useEffect(() => {

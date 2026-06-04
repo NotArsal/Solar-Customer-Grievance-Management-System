@@ -8,7 +8,7 @@ import Category from '../routing/category.model.js';
 import { sendTicketConfirmation } from '../../services/email.service.js';
 import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
-const generateTicketId = async () => {
+export const generateTicketId = async () => {
   const counter = await Counter.findOneAndUpdate(
     { id: 'ticket_seq' },
     { $inc: { seq: 1 } },
@@ -176,8 +176,11 @@ export const updateStatus = asyncHandler(async (req, res) => {
   const from_status = complaint.status;
   complaint.status = status;
   if (status === 'resolved') complaint.resolved_at = new Date();
-  if (status === 'unresolved') {
-    complaint.closed_at = new Date();
+  if (status === 'unresolved') complaint.closed_at = new Date();
+
+  // If transitioning to a terminal state from a non-terminal state
+  if ((status === 'resolved' || status === 'unresolved') && 
+      (from_status !== 'resolved' && from_status !== 'unresolved')) {
     if (complaint.assigned_to) {
       const staffMember = await User.findById(complaint.assigned_to);
       if (staffMember && staffMember.activeTicketsCount > 0) {

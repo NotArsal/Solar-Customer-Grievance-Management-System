@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import Complaint from '../modules/complaint/complaint.model.js';
 import TicketHistory from '../modules/complaint/ticketHistory.model.js';
+import { generateTicketId } from '../modules/complaint/complaint.controller.js';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const isDummyToken = !TELEGRAM_TOKEN || TELEGRAM_TOKEN.includes('dummy') || TELEGRAM_TOKEN === '1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -19,6 +20,9 @@ if (!isDummyToken) {
 } else {
   console.log('⚠️ Telegram Bot disabled (dummy token detected).');
 }
+
+// In-memory session store for multi-step conversations
+const sessions = new Map();
 
 if (bot) {
   bot.on('message', async (msg) => {
@@ -116,7 +120,8 @@ if (bot) {
 
           if (fileId) {
             const file = await bot.getFile(fileId);
-            attachmentUrl = `http://localhost:5000/v1/media/telegram?file_path=${file.file_path}`;
+            const apiUrl = process.env.API_URL || 'http://localhost:5000';
+            attachmentUrl = `${apiUrl}/v1/media/telegram?file_path=${file.file_path}`;
             session.data.attachments = [attachmentUrl];
           }
         } catch (err) {
@@ -128,9 +133,7 @@ if (bot) {
           const opts = { reply_markup: { remove_keyboard: true } };
           bot.sendMessage(chatId, "⏳ Submitting your complaint...", opts);
           
-          const year = new Date().getFullYear();
-          const count = await Complaint.countDocuments();
-          const ticket_id = `NTS-${year}-${String(count + 1).padStart(5, '0')}`;
+          const ticket_id = await generateTicketId();
           
           const newComplaint = new Complaint({
             ...session.data,

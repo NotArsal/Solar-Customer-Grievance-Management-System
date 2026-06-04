@@ -36,7 +36,6 @@ const productIssueMapping = {
 export default function CustomerPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [categories, setCategories] = useState([]);
   const [myTickets, setMyTickets] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -55,20 +54,9 @@ export default function CustomerPortal() {
       return;
     }
     setUser(userData);
-    fetchCategories();
     fetchMyTickets();
-  }, [navigate]); // ignoring fetchCategories/fetchMyTickets in deps to prevent infinite loops unless wrapped in useCallback
+  }, [navigate]);
 
-  const fetchCategories = async () => {
-    // We now use productIssueMapping for frontend UI mapping.
-    // We still fetch the API categories to make sure backend syncs.
-    try {
-      const res = await api.get('/v1/routing-categories');
-      setCategories(res.data);
-    } catch (err) {
-      toast.error('Failed to load categories');
-    }
-  };
 
   const handleProductChange = (e) => {
     setFormData({

@@ -44,8 +44,10 @@ export const checkSLA = async () => {
   }
 };
 
-// Run immediately on startup
-checkSLA();
+export const initJobs = () => {
+  // Run immediately on startup
+  checkSLA();
 
-// Then run every hour
-cron.schedule('0 * * * *', checkSLA);
+  // Then run every hour
+  cron.schedule('0 * * * *', checkSLA);
+};
