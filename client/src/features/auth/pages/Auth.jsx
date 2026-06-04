@@ -6,13 +6,13 @@ import api from '../../../config/axios';
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleToggle = () => {
     setIsLogin(!isLogin);
-    setFormData({ name: '', email: '', password: '' });
+    setFormData({ name: '', email: '', phone: '', password: '' });
   };
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,7 +41,7 @@ export default function Auth() {
         }
       } else {
         // Customer Signup
-        const res = await api.post('/v1/auth/customer/register', formData);
+        const res = await api.post('/v1/auth/register', formData);
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
         toast.success('Account created successfully!');
@@ -73,18 +73,32 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div>
-              <label className="block text-xs font-medium text-brand-ink-mute mb-1">Full Name</label>
-              <input 
-                type="text" 
-                name="name" 
-                required 
-                className="input-field" 
-                placeholder="John Doe"
-                value={formData.name} 
-                onChange={handleChange} 
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-xs font-medium text-brand-ink-mute mb-1">Full Name</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  required 
+                  className="input-field" 
+                  placeholder="John Doe"
+                  value={formData.name} 
+                  onChange={handleChange} 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-ink-mute mb-1">Phone Number</label>
+                <input 
+                  type="tel" 
+                  name="phone" 
+                  required 
+                  className="input-field" 
+                  placeholder="+1 234 567 8900"
+                  value={formData.phone} 
+                  onChange={handleChange} 
+                />
+              </div>
+            </>
           )}
           <div>
             <label className="block text-xs font-medium text-brand-ink-mute mb-1">Email Address</label>
