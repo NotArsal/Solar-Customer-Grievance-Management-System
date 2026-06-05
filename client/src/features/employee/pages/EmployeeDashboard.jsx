@@ -20,13 +20,13 @@ export default function EmployeeDashboard() {
       const res = await api.get('/v1/complaints');
       setTickets(res.data);
     } catch (err) {
-      if (err.response?.status === 401) navigate('/login');
+      if (err.response?.status === 401) navigate('/auth');
     }
   }, [navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token || currentUser.role !== 'employee') return navigate('/login');
+    if (!token || currentUser.role !== 'employee') return navigate('/auth');
     fetchTickets();
   }, [navigate, currentUser, fetchTickets]);
   // fetchTickets moved above

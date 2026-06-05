@@ -7,5 +7,6 @@ const notificationSchema = new mongoose.Schema({
   type: { type: String, enum: ['SLA_BREACH', 'NEW_TICKET', 'STATUS_UPDATE', 'ASSIGNMENT', 'GENERAL'], required: true },
   is_read: { type: Boolean, default: false }
 }, { timestamps: { createdAt: 'created_at' } });
+notificationSchema.index({ user_id: 1, created_at: -1 });
 
 export default mongoose.model('Notification', notificationSchema);

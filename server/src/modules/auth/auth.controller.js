@@ -5,7 +5,7 @@ import User from '../user/user.model.js';
 
 export const customerRegister = asyncHandler(async (req, res) => {
   const { name, email, phone, password } = req.body;
-  const exists = await User.findOne({ email });
+  const exists = await User.findOne({ email: String(email) });
   if (exists) {
     res.status(400);
     throw new Error('Email already registered');
@@ -20,7 +20,7 @@ export const customerRegister = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: String(email) });
   if (!user || !user.is_active) {
     res.status(401);
     throw new Error('Invalid credentials or inactive account');

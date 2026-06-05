@@ -77,8 +77,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
   if (staffMember) {
       assigned_to = staffMember._id;
-      staffMember.activeTicketsCount += 1;
-      await staffMember.save();
   }
 
   const customer_id = req.user && req.user.role === 'customer' ? req.user.id : null;
@@ -103,6 +101,11 @@ export const createComplaint = asyncHandler(async (req, res) => {
     sla_due_at
   });
   await complaint.save();
+
+  if (staffMember) {
+      staffMember.activeTicketsCount += 1;
+      await staffMember.save();
+  }
 
   const history = new TicketHistory({
     ticket_id,
@@ -198,7 +201,7 @@ export const updateStatus = asyncHandler(async (req, res) => {
       resolved_at: complaint.resolved_at,
       closed_at: complaint.closed_at
     }
-  });
+  }, { runValidators: true });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -258,7 +261,7 @@ export const assignTicket = asyncHandler(async (req, res) => {
       assigned_to: assignedToId,
       reassignment_request: { is_requested: false, reason: '' }
     }
-  });
+  }, { runValidators: true });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -288,7 +291,7 @@ export const requestReassignment = asyncHandler(async (req, res) => {
 
   await Complaint.findByIdAndUpdate(id, {
     $set: { reassignment_request: { is_requested: true, reason } }
-  });
+  }, { runValidators: true });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -331,7 +334,7 @@ export const overridePriority = asyncHandler(async (req, res) => {
       priority,
       sla_due_at: newSla
     }
-  });
+  }, { runValidators: true });
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,

@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   
   const [newCat, setNewCat] = useState({ name: '', priority: 'Medium', assigned_department: 'General', sla_hours: 48 });
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
       const res = await api.get('/v1/complaints');
       setTickets(res.data);
     } catch (err) {
-      if (err.response?.status === 401) navigate('/login');
+      if (err.response?.status === 401) navigate('/auth');
     }
   }, [navigate]);
 
@@ -53,12 +54,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!token || (user.role !== 'admin' && user.role !== 'superadmin')) return navigate('/login');
+    if (!token || (user.role !== 'admin' && user.role !== 'superadmin')) return navigate('/auth');
     
-    fetchTickets();
-    fetchEmployees();
-    fetchStats();
-    fetchCategories();
+    setIsLoading(true);
+    Promise.all([
+      fetchTickets(),
+      fetchEmployees(),
+      fetchStats(),
+      fetchCategories()
+    ]).finally(() => setIsLoading(false));
   }, [navigate, fetchTickets, fetchEmployees, fetchStats, fetchCategories]);
 
   // Functions moved above with useCallback
@@ -102,10 +106,16 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
       <div className="flex justify-between items-center">
         <h2 className="text-[36px] tracking-display-lg font-medium text-brand-ink">Admin Overview</h2>
-        <button onClick={() => { localStorage.clear(); navigate('/login'); }} className="text-sm font-medium text-brand-ink-mute hover:text-brand-ink transition-colors">Logout</button>
+        <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/auth'); window.location.reload(); }} className="text-sm font-medium text-brand-ink-mute hover:text-brand-ink transition-colors">Logout</button>
       </div>
 
-      <div className="flex space-x-4 border-b border-brand-hairline">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+        </div>
+      ) : (
+        <>
+          <div className="flex space-x-4 border-b border-brand-hairline">
         <button onClick={() => setActiveTab('tickets')} className={`pb-3 px-4 font-medium text-sm transition-colors ${activeTab === 'tickets' ? 'border-b-[3px] border-brand-primary text-brand-ink' : 'text-brand-ink-mute hover:text-brand-ink'}`}>All Tickets</button>
         <button onClick={() => setActiveTab('routing')} className={`pb-3 px-4 font-medium text-sm transition-colors ${activeTab === 'routing' ? 'border-b-[3px] border-brand-primary text-brand-ink' : 'text-brand-ink-mute hover:text-brand-ink'}`}>Routing Table</button>
         <button onClick={() => setActiveTab('analytics')} className={`pb-3 px-4 font-medium text-sm transition-colors ${activeTab === 'analytics' ? 'border-b-[3px] border-brand-primary text-brand-ink' : 'text-brand-ink-mute hover:text-brand-ink'}`}>Analytics</button>
@@ -281,6 +291,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

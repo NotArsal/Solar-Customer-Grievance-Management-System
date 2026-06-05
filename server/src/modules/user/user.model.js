@@ -12,5 +12,6 @@ const userSchema = new mongoose.Schema({
   is_active: { type: Boolean, default: true },
   last_login: { type: Date }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+userSchema.index({ role: 1, activeTicketsCount: 1 });
 
 export default mongoose.model('User', userSchema);

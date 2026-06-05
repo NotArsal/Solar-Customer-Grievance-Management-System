@@ -28,7 +28,8 @@ function MainApp() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsMobileMenuOpen(false);
     navigate('/');
     window.location.reload(); 

@@ -9,5 +9,7 @@ const ticketHistorySchema = new mongoose.Schema({
   note: { type: String },
   is_public: { type: Boolean, default: false }
 }, { timestamps: { createdAt: 'timestamp', updatedAt: false } });
+ticketHistorySchema.index({ ticket_id: 1, is_public: 1 });
+ticketHistorySchema.index({ timestamp: -1 });
 
 export default mongoose.model('TicketHistory', ticketHistorySchema);

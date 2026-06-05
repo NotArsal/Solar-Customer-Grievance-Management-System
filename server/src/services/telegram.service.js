@@ -138,7 +138,7 @@ if (bot) {
           const newComplaint = new Complaint({
             ...session.data,
             ticket_id,
-            status: 'Pending',
+            status: 'pending',
             source: 'telegram',
             telegram_chat_id: chatId
           });
@@ -147,7 +147,7 @@ if (bot) {
           const history = new TicketHistory({
             ticket_id,
             action: 'status_change',
-            to_status: 'Pending',
+            to_status: 'pending',
             note: 'Complaint registered via Telegram',
             is_public: true
           });

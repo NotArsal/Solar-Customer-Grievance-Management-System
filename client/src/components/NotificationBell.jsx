@@ -10,8 +10,32 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Check every minute
-    return () => clearInterval(interval);
+    let intervalId;
+
+    const startPolling = () => {
+      intervalId = setInterval(fetchNotifications, 60000);
+    };
+
+    const stopPolling = () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        stopPolling();
+      } else {
+        fetchNotifications();
+        startPolling();
+      }
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchNotifications = async () => {

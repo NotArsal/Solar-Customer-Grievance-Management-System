@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +44,16 @@ export default function CustomerPortal() {
   const [file, setFile] = useState(null);
   const [ticketId, setTicketId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    abortControllerRef.current = new AbortController();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -81,14 +91,18 @@ export default function CustomerPortal() {
     try {
       let attachmentUrl = null;
       if (file) {
-        const imgFormData = new FormData();
-        imgFormData.append('image', file);
-        
-        const imgbbRes = await axios.post(
-          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
-          imgFormData
+        const base64Img = await new Promise((resolve, reject) => {
+           const reader = new FileReader();
+           reader.readAsDataURL(file);
+           reader.onload = () => resolve(reader.result);
+           reader.onerror = error => reject(error);
+        });
+
+        const uploadRes = await api.post('/v1/media/upload', 
+          { image: base64Img },
+          { signal: abortControllerRef.current?.signal }
         );
-        attachmentUrl = imgbbRes.data.data.url;
+        attachmentUrl = uploadRes.data.data.url;
       }
 
       const generatedSubject = formData.description.length > 50 

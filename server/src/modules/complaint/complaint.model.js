@@ -40,6 +40,8 @@ const complaintSchema = new mongoose.Schema({
 
 complaintSchema.index({ status: 1 });
 complaintSchema.index({ created_at: -1 });
+complaintSchema.index({ customer_id: 1 });
+complaintSchema.index({ assigned_to: 1 });
 
 export default mongoose.model('Complaint', complaintSchema);
 

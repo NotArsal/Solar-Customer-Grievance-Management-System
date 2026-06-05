@@ -14,14 +14,15 @@ export const checkSLA = async () => {
 
     const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } });
 
+    const notifications = [];
+    const ticketIds = [];
+
     for (const ticket of breached) {
-      ticket.is_sla_breached = true;
-      await ticket.save();
+      ticketIds.push(ticket._id);
       console.log(`SLA Breached for Ticket: ${ticket.ticket_id}`);
 
-      // Notify admins
       for (const admin of admins) {
-        await Notification.create({
+        notifications.push({
           user_id: admin._id,
           ticket_id: ticket.ticket_id,
           type: 'SLA_BREACH',
@@ -29,15 +30,21 @@ export const checkSLA = async () => {
         });
       }
 
-      // Notify assigned employee
       if (ticket.assigned_to) {
-        await Notification.create({
+        notifications.push({
           user_id: ticket.assigned_to,
           ticket_id: ticket.ticket_id,
           type: 'SLA_BREACH',
           message: `SLA BREACHED: Your ticket ${ticket.ticket_id} has exceeded its resolution time.`
         });
       }
+    }
+
+    if (ticketIds.length > 0) {
+      await Complaint.updateMany({ _id: { $in: ticketIds } }, { $set: { is_sla_breached: true } });
+    }
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
     }
   } catch (err) {
     console.error('SLA Checker Error:', err);
