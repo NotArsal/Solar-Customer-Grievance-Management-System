@@ -7,7 +7,7 @@ const router = express.Router();
 
 const complaintLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 50,
   message: { status: 'error', message: 'Too many complaints from this IP, please try again after 15 minutes.' }
 });
 
