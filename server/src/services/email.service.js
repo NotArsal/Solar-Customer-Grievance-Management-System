@@ -38,7 +38,9 @@ export const sendTicketConfirmation = async (ticket) => {
     if (!transporter) await initTransporter();
     
     const info = await transporter.sendMail({
-      from: '"NatureTek Solar Support" <support@natureteksolar.com>',
+      from: process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('example') 
+        ? `"NatureTek Solar Support" <${process.env.EMAIL_USER}>` 
+        : '"NatureTek Solar Support" <support@natureteksolar.com>',
       to: ticket.customer_email,
       subject: `Complaint Registered — Ticket ${ticket.ticket_id}`,
       html: `
@@ -56,5 +58,33 @@ export const sendTicketConfirmation = async (ticket) => {
     }
   } catch (error) {
     console.error('Email send error:', error);
+  }
+};
+
+export const sendStatusUpdateEmail = async (ticket, newStatus, note) => {
+  try {
+    if (!transporter) await initTransporter();
+    
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('example') 
+        ? `"NatureTek Solar Support" <${process.env.EMAIL_USER}>` 
+        : '"NatureTek Solar Support" <support@natureteksolar.com>',
+      to: ticket.customer_email,
+      subject: `Update on Ticket ${ticket.ticket_id} - ${newStatus.toUpperCase()}`,
+      html: `
+        <h2>Ticket Status Updated</h2>
+        <p>Dear ${ticket.customer_name},</p>
+        <p>The status of your ticket (<strong>${ticket.ticket_id}</strong>) has been updated to: <strong>${newStatus}</strong>.</p>
+        ${note ? `<p><strong>Note from team:</strong> ${note}</p>` : ''}
+        <p>You can track the full status timeline on our portal.</p>
+        <p>Regards,<br>Nature Tek Solar</p>
+      `
+    });
+
+    if (transporter.options.host === 'smtp.ethereal.email') {
+      console.log("📨 Test Status Update Email sent! Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
+  } catch (error) {
+    console.error('Status Update Email send error:', error);
   }
 };

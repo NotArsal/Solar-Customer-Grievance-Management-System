@@ -5,7 +5,7 @@ import TicketHistory from './ticketHistory.model.js';
 import Counter from './counter.model.js';
 import User from '../user/user.model.js';
 import Category from '../routing/category.model.js';
-import { sendTicketConfirmation } from '../../services/email.service.js';
+import { sendTicketConfirmation, sendStatusUpdateEmail } from '../../services/email.service.js';
 import { notifyCustomerViaTelegram } from '../../services/telegram.service.js';
 
 export const generateTicketId = async () => {
@@ -133,13 +133,16 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
 export const trackComplaint = asyncHandler(async (req, res) => {
   const { ticket_id } = req.params;
-  const complaint = await Complaint.findOne({ ticket_id });
+  const complaint = await Complaint.findOne({ ticket_id }).populate('assigned_to', 'name email');
   if (!complaint) {
     res.status(404);
     throw new Error('Ticket not found');
   }
   
-  const history = await TicketHistory.find({ ticket_id, is_public: true }).sort({ timestamp: -1 });
+  const history = await TicketHistory.find({ ticket_id, is_public: true })
+    .sort({ timestamp: -1 })
+    .populate('performed_by', 'name email');
+    
   res.json({ complaint, history });
 });
 
@@ -204,11 +207,14 @@ export const updateStatus = asyncHandler(async (req, res) => {
     to_status: status,
     performed_by: req.user.id,
     note,
-    is_public
+    is_public: is_public !== undefined ? is_public : true
   });
   await history.save();
 
   notifyCustomerViaTelegram(complaint, `Your ticket status has been updated to: **${status}**\n\nNote: ${note}`).catch(err => console.error(err));
+  if (complaint.customer_email) {
+    sendStatusUpdateEmail(complaint, status, note).catch(err => console.error(err));
+  }
 
   res.json({ message: 'Status updated', complaint });
 });
