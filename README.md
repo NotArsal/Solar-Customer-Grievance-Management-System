@@ -272,8 +272,25 @@ CNAME   api         your-app.onrender.com    ← Backend
 | GET | `/v1/reports/summary` | Admin+ |
 | GET | `/v1/reports/export` | Admin+ |
 | POST | `/v1/telegram/webhook` | Telegram only |
+| POST | `/v1/media/upload` | Base64 Image Proxy (Public) |
 
 Full API docs: see `docs/Nature_Tek_Solar_Grievance_PRD.md` Section 10
+
+---
+
+## Recent Updates
+
+### Security Enhancements
+- **Telegram Proxy Validation:** Added strict SSRF and directory traversal checks to block malicious file paths.
+- **NoSQL Injection Prevention:** Enforced string casting in `auth.controller.js` to mitigate object-based NoSQL injection risks.
+- **Mass Assignment Protection:** Integrated `{ runValidators: true }` across all status and assignment updates.
+- **API Key Proxy:** Built a dedicated `/v1/media/upload` proxy route to securely upload images to ImgBB without exposing `VITE_IMGBB_API_KEY` to the public frontend.
+
+### Performance & UX
+- **Page Visibility API Polling:** `NotificationBell.jsx` now intelligently pauses auto-polling when the browser tab is hidden, dramatically reducing server bandwidth.
+- **Optimized Initial Load:** Re-architected `AdminDashboard.jsx` to load all resources simultaneously via `Promise.all` with a unified loading state.
+- **SLA Cron Optimization:** Replaced highly inefficient N+1 queries in `sla.checker.js` with batch `insertMany` and `updateMany` operations.
+- **Mongoose Indexes:** Implemented indexing across Complaints, Users, and Notifications for high-speed lookups.
 
 ---
 
