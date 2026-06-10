@@ -28,58 +28,6 @@ A comprehensive, role-based Customer Grievance Management System (CGMS) designed
 
 For an in-depth breakdown of the technical components, please refer to our **[Detailed Architecture Documentation](docs/architecture.md)**.
 
-```mermaid
-graph TD
-    %% Define Styles
-    classDef frontend fill:#3ecf8e,stroke:#24b47e,stroke-width:2px,color:#171717;
-    classDef backend fill:#1c1c1c,stroke:#3ecf8e,stroke-width:2px,color:#ffffff;
-    classDef database fill:#4ade80,stroke:#24b47e,stroke-width:2px,color:#171717;
-    classDef external fill:#f3f4f6,stroke:#d1d5db,stroke-width:2px,color:#171717;
-    classDef user fill:#ffffff,stroke:#3ecf8e,stroke-width:2px,color:#171717,stroke-dasharray: 5 5;
-
-    %% Actors
-    Customer(["🧑‍💼 Customer"]):::user
-    Employee(["👷 Employee / Admin"]):::user
-
-    %% Frontend Layer
-    subgraph Frontend ["Frontend Layer (Vercel)"]
-        WebPortal["💻 React Web Portal<br/>(Vite + Tailwind)"]:::frontend
-    end
-
-    %% External Interfaces
-    subgraph External ["External Services"]
-        TelegramBot["🤖 Telegram Bot<br/>(@NatureTekSupportBot)"]:::external
-        ImgBB["🖼️ ImgBB<br/>(Image Storage)"]:::external
-        Nodemailer["📧 Gmail SMTP<br/>(Email Notifications)"]:::external
-    end
-
-    %% Backend Layer
-    subgraph Backend ["Backend Layer (Render)"]
-        NodeAPI["⚙️ Node.js + Express API<br/>(REST, JWT, Upload Proxy)"]:::backend
-        SLAEngine["⏱️ SLA Cron Job<br/>(Hourly Breach Checks)"]:::backend
-    end
-
-    %% Data Layer
-    subgraph Data ["Data Layer (MongoDB Atlas)"]
-        MongoDB[("🍃 MongoDB<br/>(Complaints, Users, History)")]:::database
-    end
-
-    %% Relationships
-    Customer -- "Raises Complaint / Tracks Status" --> WebPortal
-    Customer -- "Raises Complaint via Chat" --> TelegramBot
-    Employee -- "Manages Tickets / Views Analytics" --> WebPortal
-
-    WebPortal -- "HTTPS REST API" --> NodeAPI
-    TelegramBot -- "Webhook" --> NodeAPI
-
-    NodeAPI -- "Proxies Images" --> ImgBB
-    NodeAPI -- "Sends Alerts" --> Nodemailer
-    NodeAPI -- "Reads / Writes" --> MongoDB
-
-    SLAEngine -- "Checks Deadlines" --> MongoDB
-    SLAEngine -- "Triggers Breach Alerts" --> NodeAPI
-```
-
 ---
 
 ## Project Structure

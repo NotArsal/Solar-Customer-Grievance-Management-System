@@ -1,8 +1,12 @@
-# System Architecture
+# System Architecture & Technical Specifications
 
-This document provides a detailed breakdown of the technical architecture for the Nature Tek Solar Customer Grievance Management System (CGMS).
+This document provides an exhaustive, multi-layered breakdown of the technical architecture for the Nature Tek Solar Customer Grievance Management System (CGMS). It details the macro-level system interactions, data flow models, and the security boundary implementations.
 
-## High-Level Architecture Diagram
+---
+
+## 1. High-Level Macro Architecture
+
+The core architecture follows a decoupled, three-tier model (Client, Server, Database) augmented by external SaaS integrations for specialized tasks (image hosting, email delivery, conversational bots).
 
 ```mermaid
 graph TD
@@ -24,68 +28,152 @@ graph TD
 
     %% External Interfaces
     subgraph External ["External Services"]
-        TelegramBot["🤖 Telegram Bot<br/>(@NatureTekSupportBot)"]:::external
-        ImgBB["🖼️ ImgBB<br/>(Image Storage API)"]:::external
-        Nodemailer["📧 Gmail SMTP<br/>(Email Notifications)"]:::external
+        TelegramBot["🤖 Telegram Bot API<br/>(Webhook Mode)"]:::external
+        ImgBB["🖼️ ImgBB API<br/>(Base64 Image Storage)"]:::external
+        Nodemailer["📧 Gmail SMTP<br/>(Email Delivery)"]:::external
     end
 
     %% Backend Layer
     subgraph Backend ["Backend Layer (Render)"]
-        NodeAPI["⚙️ Node.js + Express API<br/>(REST, JWT, Upload Proxy)"]:::backend
-        SLAEngine["⏱️ SLA Cron Job<br/>(Hourly Breach Checks)"]:::backend
+        NodeAPI["⚙️ Node.js + Express Core API<br/>(REST Controllers, JWT Auth)"]:::backend
+        SLAEngine["⏱️ Node-Cron Engine<br/>(Hourly Breach Checks)"]:::backend
+        UploadProxy["🛡️ Media Upload Proxy<br/>(SSRF Protection)"]:::backend
     end
 
     %% Data Layer
     subgraph Data ["Data Layer (MongoDB Atlas)"]
-        MongoDB[("🍃 MongoDB<br/>(Complaints, Users, History)")]:::database
+        MongoDB[("🍃 MongoDB Cluster<br/>(Document Store)")]:::database
     end
 
     %% Relationships
-    Customer -- "Raises Complaint / Tracks Status" --> WebPortal
-    Customer -- "Raises Complaint via Chat" --> TelegramBot
-    Employee -- "Manages Tickets / Views Analytics" --> WebPortal
+    Customer -- "HTTPS / React UI" --> WebPortal
+    Customer -- "Telegram App" --> TelegramBot
+    Employee -- "Dashboards / Reports" --> WebPortal
 
-    WebPortal -- "HTTPS REST API" --> NodeAPI
-    TelegramBot -- "Webhook" --> NodeAPI
+    WebPortal -- "REST API (Axios)" --> NodeAPI
+    WebPortal -- "Base64 Payload" --> UploadProxy
+    TelegramBot -- "POST Webhook" --> NodeAPI
 
-    NodeAPI -- "Proxies Images" --> ImgBB
-    NodeAPI -- "Sends Alerts" --> Nodemailer
-    NodeAPI -- "Reads / Writes" --> MongoDB
-
-    SLAEngine -- "Checks Deadlines" --> MongoDB
-    SLAEngine -- "Triggers Breach Alerts" --> NodeAPI
+    UploadProxy -- "Secure Forwarding" --> ImgBB
+    NodeAPI -- "Dispatches OTPs & Alerts" --> Nodemailer
+    NodeAPI -- "Mongoose ODM" --> MongoDB
+    SLAEngine -- "Batch Updates" --> MongoDB
+    SLAEngine -- "Alert Trigger" --> NodeAPI
 ```
 
-## Component Breakdown
+---
 
-### 1. Frontend Layer (Client)
-- **Framework:** React.js powered by Vite for rapid compilation.
-- **Styling:** Tailwind CSS, utilizing a specific design system centered around an Emerald primary color (`#3ecf8e`).
-- **Hosting:** Hosted on Vercel (`grievance.natureteksolar.com`).
-- **Core Views:**
-  - **Public:** Customer Portal (complaint registration) and OTP-based Ticket Tracker.
-  - **Internal:** Employee Dashboard (assigned tickets) and Admin Dashboard (routing, SLA config, analytics).
-- **Optimization:** Utilizes the Page Visibility API to pause long-polling API calls (like notification checks) when the browser tab is hidden to save server bandwidth.
+## 2. Authentication & Data Flow (Sequence)
 
-### 2. Backend Layer (Server)
-- **Framework:** Node.js with Express.
-- **Security:** 
-  - JWT Authentication for secure role-based access.
-  - Strict input sanitization against NoSQL injection.
-  - Image Upload Proxy (`/v1/media/upload`) that hides the ImgBB API key from the frontend and accepts base64 payloads securely.
-  - Path Traversal prevention on Telegram webhooks.
-- **SLA Engine:** A background `node-cron` job running continuously to flag tickets that have breached their designated Service Level Agreement deadlines.
+The following sequence diagram illustrates the typical lifecycle of a customer filing a complaint and checking its status using the secure OTP fallback method.
 
-### 3. Data Layer (Database)
-- **Database Engine:** MongoDB hosted on MongoDB Atlas.
-- **Schemas:** 
-  - `User` (Staff authentication and workload tracking).
-  - `Complaint` (The master ticket model carrying customer data, status, and SLA).
-  - `TicketHistory` (An immutable audit trail of all actions and comments applied to a ticket).
-  - `Notification` (Stores all alerts dispatched to users).
-- **Optimization:** Compound indexes applied to `TicketHistory` and `Notification` to ensure sub-millisecond retrieval speeds for the dashboards.
+```mermaid
+sequenceDiagram
+    actor Customer
+    participant React UI
+    participant Express API
+    participant Mail Server (SMTP)
+    participant MongoDB
 
-### 4. External Services & Integrations
-- **Telegram Bot:** A dedicated automated channel allowing users to register and track complaints via their phones seamlessly.
-- **ImgBB:** A cloud image storage proxy used to host customer evidence (cracked panels, error codes on inverters).
-- **SMTP Notification Pipeline:** Integrated Nodemailer for dispatching OTP verification emails and automated status updates to customers.
+    %% Ticket Creation Phase
+    Customer->>React UI: Fills out Complaint Form + Attaches Image
+    React UI->>Express API: POST /media/upload (Base64)
+    Express API->>ImgBB: Forward Payload
+    ImgBB-->>Express API: Image URL
+    React UI->>Express API: POST /complaints (Data + Image URL)
+    Express API->>MongoDB: Insert Document (Status: Pending)
+    Express API->>Mail Server: Dispatch Confirmation Email
+    Express API-->>React UI: Return Ticket ID (NTS-2026-XXXX)
+    React UI-->>Customer: Display Success Screen with Ticket ID
+
+    %% OTP Verification Phase
+    Customer->>React UI: Enter Ticket ID + Phone to Track
+    React UI->>Express API: POST /auth/otp/send (Phone)
+    Express API->>Mail Server: Send OTP to mapped email
+    Mail Server-->>Customer: Receives 6-digit OTP
+    Customer->>React UI: Submits 6-digit OTP
+    React UI->>Express API: POST /auth/otp/verify (Phone, OTP)
+    Express API->>MongoDB: Validate OTP & Expiry
+    Express API-->>React UI: Return Short-lived JWT Track Token
+    React UI->>Express API: GET /complaints/track/:ticketId (Bearer Token)
+    Express API->>MongoDB: Fetch Ticket + Public History
+    Express API-->>React UI: JSON Ticket Data
+    React UI-->>Customer: Renders Tracking Timeline
+```
+
+---
+
+## 3. Core Database Schemas (ER Model)
+
+The database utilizes a highly normalized schema for strict history auditing, paired with embedded subdocuments for performance where appropriate.
+
+```mermaid
+erDiagram
+    COMPLAINT ||--o{ TICKET_HISTORY : tracks
+    USER ||--o{ COMPLAINT : assigned_to
+    USER ||--o{ TICKET_HISTORY : performed_by
+    COMPLAINT ||--o{ NOTIFICATION : triggers
+
+    COMPLAINT {
+        ObjectId _id PK
+        string ticket_id "e.g., NTS-2026-0012"
+        string customer_name
+        string customer_phone
+        string product_type
+        string category
+        string status "Pending, In-Progress, Resolved"
+        date sla_due_at
+        boolean is_sla_breached
+    }
+
+    USER {
+        ObjectId _id PK
+        string name
+        string email
+        string role "employee, admin"
+        string department
+    }
+
+    TICKET_HISTORY {
+        ObjectId _id PK
+        ObjectId ticket_id FK
+        string action "status_change, comment"
+        string note
+        boolean is_public
+        date timestamp
+    }
+
+    NOTIFICATION {
+        ObjectId _id PK
+        ObjectId ticket_id FK
+        string type "email, telegram"
+        string recipient
+        string message
+    }
+```
+
+---
+
+## 4. Component Breakdown & Security Posture
+
+### 4.1 Frontend Layer (Vercel)
+- **Framework:** React.js + Vite.
+- **State & Sync:** Managed via Custom Hooks wrapping Axios requests, with `React Hot Toast` for transient state feedback.
+- **Resource Optimization:** The `NotificationBell` component utilizes the `document.visibilityState` API. If the user minimizes the tab, polling halts entirely, cutting idle backend bandwidth by over 90%.
+
+### 4.2 Backend Layer (Render)
+- **Security Boundary:**
+  - **Upload Proxy (`/v1/media/upload`):** Prevents exposure of external API keys. Validates base64 signatures to ensure the payload is actually an image (PNG/JPEG/WEBP) and blocks SSRF vectors.
+  - **NoSQL Injection Guard:** Enforces strict type-casting in critical controllers (e.g., `auth.controller.js`) preventing object-injection (`$ne`, `$gt`) bypasses.
+  - **Mass Assignment:** Uses Mongoose `{ runValidators: true }` paired with explicit object destructuring to ensure employees cannot arbitrarily alter restricted fields (like `customer_phone` or `sla_due_at`).
+
+### 4.3 Data Layer (MongoDB Atlas)
+- **Indexing Strategy:** 
+  - Unique Index on `ticket_id` for O(1) lookups.
+  - Compound Index on `{ ticket_id: 1, timestamp: -1 }` inside `TicketHistory` to rapidly construct timelines.
+  - Index on `{ status: 1, is_sla_breached: 1 }` to ensure the Node-Cron SLA checker completes in milliseconds, even with thousands of open tickets.
+
+### 4.4 External Integrations
+- **Telegram Bot:** Operates entirely over secure Webhooks rather than long-polling. Prevents double-processing and reduces overhead. Incorporates primitive keyword-matching auto-categorization.
+- **ImgBB:** Headless image hosting. Storage URLs are embedded directly into the MongoDB document arrays. 
+- **Nodemailer:** Utilizes a generic SMTP transport layer, designed to be hot-swappable to SendGrid or Amazon SES when scaling is required.
