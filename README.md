@@ -8,9 +8,25 @@
 > Industry Project — VIT Pune, CSE-AI Division E, Batch 3  
 > Client: Nature Tek Solar Pvt. Ltd., Nashik, Maharashtra
 
+A comprehensive, role-based Customer Grievance Management System (CGMS) designed specifically for Nature Tek Solar. It digitizes and streamlines the handling of customer issues related to solar panels, inverters, and installations, replacing manual, unorganized WhatsApp messages with a unified tracking platform.
+
+---
+
+## Key Features
+
+- **Public Customer Portal:** Frictionless ticket creation without user registration.
+- **OTP-Based Status Tracking:** Secure timeline view for customers to check ticket progress using their registered phone number.
+- **Employee & Admin Dashboards:** Dedicated workspaces for managing assignments, updating statuses, and adding internal/public notes.
+- **SLA Management Engine:** Hourly background cron jobs that calculate SLA deadlines and automatically flag breached tickets.
+- **Advanced Analytics:** Admin insights featuring KPIs, category breakdowns, and SLA compliance metrics.
+- **Multi-Channel Integration:** Customers can raise and track complaints via the web portal or directly through an official **Telegram Bot** (`@NatureTekSupportBot`).
+- **Automated Notifications:** Real-time email and Telegram alerts dispatched at every critical status transition.
+
 ---
 
 ## System Architecture
+
+For an in-depth breakdown of the technical components, please refer to our **[Detailed Architecture Documentation](docs/architecture.md)**.
 
 ```mermaid
 graph TD
@@ -75,92 +91,42 @@ cgms-natureteksolar/
 │   ├── public/
 │   │   └── logo.png
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── common/              # Shared: Button, Input, Badge, Modal
-│   │   │   ├── customer/            # ComplaintForm, StatusTracker, FeedbackForm
-│   │   │   ├── employee/            # TicketList, TicketDetail, CommentThread
-│   │   │   └── admin/               # AdminDashboard, Analytics, UserManagement
-│   │   ├── pages/
-│   │   │   ├── CustomerPortal.jsx   # / route
-│   │   │   ├── TrackTicket.jsx      # /track route
-│   │   │   ├── Login.jsx            # /login
-│   │   │   ├── EmployeeDashboard.jsx# /employee
-│   │   │   └── AdminDashboard.jsx   # /admin
-│   │   ├── hooks/
-│   │   │   ├── useAuth.js
-│   │   │   ├── useTickets.js
-│   │   │   └── useNotifications.js
-│   │   ├── services/
-│   │   │   └── api.js               # Axios instance + all API calls
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx
-│   │   ├── utils/
-│   │   │   ├── formatDate.js
-│   │   │   └── statusColors.js
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── .env.example
-│   ├── vite.config.js
+│   │   ├── components/              # Reusable UI elements (common, customer, admin)
+│   │   ├── pages/                   # Route views (Portal, Dashboards)
+│   │   ├── hooks/                   # Custom React hooks (Auth, Tickets)
+│   │   ├── services/                # Axios API service instances
+│   │   └── App.jsx
 │   └── package.json
 │
 ├── server/                          # Node.js + Express backend
-│   ├── config/
-│   │   ├── db.js                    # MongoDB Atlas connection
-│   ├── models/
-│   │   ├── Complaint.js
-│   │   ├── User.js
-│   │   ├── TicketHistory.js
-│   │   ├── Notification.js
-│   │   ├── Category.js
-│   │   └── SLAConfig.js
-│   ├── routes/
-│   │   ├── auth.routes.js
-│   │   ├── complaint.routes.js
-│   │   ├── user.routes.js
-│   │   ├── report.routes.js
-│   │   └── telegram.routes.js
-│   ├── controllers/
-│   │   ├── auth.controller.js
-│   │   ├── complaint.controller.js
-│   │   ├── user.controller.js
-│   │   ├── report.controller.js
-│   │   └── telegram.controller.js
-│   ├── middleware/
-│   │   ├── auth.middleware.js       # JWT verify + role check
-│   │   └── errorHandler.js
-│   ├── services/
-│   │   ├── email.service.js         # Nodemailer
-│   │   ├── otp.service.js           # Email OTP generation/verify
-│   │   ├── telegram.service.js      # node-telegram-bot-api
-│   │   ├── sla.service.js           # SLA computation
-│   │   └── notification.service.js  # Orchestrates email + Telegram
-│   ├── jobs/
-│   │   ├── sla.checker.js           # Hourly SLA breach cron
-│   │   └── autoClose.job.js         # Daily auto-close resolved tickets
-│   ├── utils/
-│   │   ├── ticketId.js              # NTS-YYYY-XXXXX generator
-│   │   ├── autoClassify.js          # Telegram keyword categorization
-│   │   └── emailTemplates.js        # HTML email templates
-│   ├── seed/
-│   │   ├── seed.js                  # Run once to seed DB
-│   │   ├── employees.json
-│   │   ├── products.json
-│   │   └── categories_sla.json
-│   ├── .env.example
-│   ├── app.js                       # Express app setup
-│   ├── server.js                    # Entry point
-│   └── package.json
+│   ├── config/                      # MongoDB connection setup
+│   ├── models/                      # Mongoose Schemas (Complaint, User, SLAConfig)
+│   ├── routes/                      # Express routers
+│   ├── controllers/                 # Route logic and handlers
+│   ├── middleware/                  # JWT auth, error handling
+│   ├── services/                    # Nodemailer, Telegram API, SLA logic
+│   ├── jobs/                        # node-cron scheduled tasks
+│   └── server.js
 │
-├── docs/
+├── docs/                            # Project specifications and diagrams
+│   ├── architecture.md              # Detailed architecture breakdown
 │   ├── Nature_Tek_Solar_Grievance_PRD.md
-│   ├── Nature_Tek_Solar_Dataset_Requirements.md
-│   └── architecture.png
+│   └── Nature_Tek_Solar_Dataset_Requirements.md
 │
-├── .gitignore
-├── README.md
-└── LICENSE
+└── README.md
 ```
+
+---
+
+## Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 18, Vite, Tailwind CSS, React Router v6, Axios, React Hot Toast |
+| **Backend** | Node.js 20 LTS, Express.js, JWT Authentication |
+| **Database** | MongoDB Atlas, Mongoose ODM |
+| **External APIs** | node-telegram-bot-api, Nodemailer (Gmail SMTP), ImgBB API |
+| **Infrastructure** | Vercel (Frontend), Render (Backend) |
 
 ---
 
@@ -210,7 +176,6 @@ JWT_EXPIRES_IN=7d
 EMAIL_USER=support@natureteksolar.com
 EMAIL_PASS=your_gmail_app_password
 
-
 # Telegram Bot
 TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
 TELEGRAM_WEBHOOK_URL=https://api.grievance.natureteksolar.com/v1/telegram/webhook
@@ -244,8 +209,8 @@ VITE_APP_NAME=NatureTek Solar Support
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-org/cgms-natureteksolar.git
-cd cgms-natureteksolar
+git clone https://github.com/NotArsal/Solar-Customer-Grievance-Management-System.git
+cd Solar-Customer-Grievance-Management-System
 ```
 
 ### 2. Setup Backend
