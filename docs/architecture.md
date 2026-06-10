@@ -19,7 +19,8 @@ graph TD
 
     %% Actors
     Customer(["🧑‍💼 Customer"]):::user
-    Employee(["👷 Employee / Admin"]):::user
+    Staff(["👷 Staff"]):::user
+    Admin(["👑 Admin"]):::user
 
     %% Frontend Layer
     subgraph Frontend ["Frontend Layer (Vercel)"]
@@ -48,7 +49,8 @@ graph TD
     %% Relationships
     Customer -- "HTTPS / React UI" --> WebPortal
     Customer -- "Telegram App" --> TelegramBot
-    Employee -- "Dashboards / Reports" --> WebPortal
+    Staff -- "Manages Tickets" --> WebPortal
+    Admin -- "System Config / Analytics" --> WebPortal
 
     WebPortal -- "REST API (Axios)" --> NodeAPI
     WebPortal -- "Base64 Payload" --> UploadProxy
@@ -130,7 +132,7 @@ erDiagram
         ObjectId _id PK
         string name
         string email
-        string role "employee, admin"
+        string role "staff, admin"
         string department
     }
 
