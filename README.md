@@ -196,6 +196,19 @@ curl -X POST https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook \
   -d '{"url": "https://abc123.ngrok.io/v1/telegram/webhook"}'
 ```
 
+### 5. Setup with Docker Compose (Recommended)
+
+If you have Docker installed, you can bypass the manual Node.js setup and run the entire stack with a single command:
+
+```bash
+docker-compose up --build -d
+```
+
+This will automatically:
+- Start the backend API on `http://localhost:5000`
+- Start the Vite frontend on `http://localhost:5173`
+- Mount your local source files so that live-reloading (HMR) continues to work perfectly as you edit code.
+
 ---
 
 ## Deployment
