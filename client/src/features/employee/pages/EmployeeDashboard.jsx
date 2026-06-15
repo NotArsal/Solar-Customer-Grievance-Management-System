@@ -106,6 +106,31 @@ export default function EmployeeDashboard() {
             <div className="bg-brand-canvas-soft p-4 rounded-md border border-brand-hairline-cool mb-6">
               <p className="text-xs font-medium uppercase text-brand-ink-mute mb-2">Customer Description</p>
               <p className="text-sm text-brand-ink whitespace-pre-wrap">{selectedTicket.description}</p>
+              
+              {selectedTicket.attachments?.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-brand-hairline-cool">
+                  <p className="text-xs font-medium uppercase text-brand-ink-mute mb-3">Attachments</p>
+                  <div className="flex flex-wrap gap-4">
+                    {selectedTicket.attachments.map((url, idx) => (
+                      <a 
+                        key={idx} 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="group relative block w-32 h-32 rounded-md overflow-hidden border border-brand-hairline hover:border-brand-primary transition-colors shadow-sm bg-white"
+                      >
+                        <img src={url} alt={`Attachment ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-brand-ink/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                          <svg className="w-6 h-6 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          <span className="text-white text-[10px] font-medium uppercase tracking-wider">Open</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleUpdate} className="space-y-4 border-t border-brand-hairline-cool pt-6">
