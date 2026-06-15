@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -44,6 +44,7 @@ export default function CustomerPortal() {
   const [file, setFile] = useState(null);
   const [ticketId, setTicketId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(true);
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -82,6 +83,8 @@ export default function CustomerPortal() {
       setMyTickets(res.data);
     } catch (err) {
       toast.error('Failed to load my tickets');
+    } finally {
+      setIsLoadingTickets(false);
     }
   };
 
@@ -212,7 +215,7 @@ export default function CustomerPortal() {
 
               <div>
                 <label className="block text-xs font-medium text-brand-ink-mute mb-2">Attachment (Optional)</label>
-                <input type="file" accept="image/*,video/*" className="input-field text-sm bg-brand-canvas-soft" onChange={e => setFile(e.target.files[0])} disabled={isSubmitting} />
+                <input type="file" accept="image/*" className="input-field text-sm bg-brand-canvas-soft" onChange={e => setFile(e.target.files[0])} disabled={isSubmitting} />
               </div>
               
               <button type="submit" className="btn-primary w-full md:w-auto mt-4" disabled={isSubmitting}>
@@ -227,7 +230,11 @@ export default function CustomerPortal() {
         <div className="card-feature-light px-6 py-6">
            <h3 className="text-lg font-medium mb-4 border-b border-brand-hairline-cool pb-2 text-brand-ink">My Tickets</h3>
            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-             {myTickets.length === 0 ? (
+             {isLoadingTickets ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-primary"></div>
+                </div>
+             ) : myTickets.length === 0 ? (
                <p className="text-sm text-brand-ink-mute text-center py-4">You have no active tickets.</p>
              ) : (
                myTickets.map(t => (

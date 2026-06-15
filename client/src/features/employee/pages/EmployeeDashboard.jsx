@@ -11,9 +11,16 @@ export default function EmployeeDashboard() {
   const [reassignReason, setReassignReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReassigning, setIsReassigning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user') || '{}'), []);
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  }, []);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -21,12 +28,14 @@ export default function EmployeeDashboard() {
       setTickets(res.data);
     } catch (err) {
       if (err.response?.status === 401) navigate('/auth');
+    } finally {
+      setIsLoading(false);
     }
   }, [navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token || currentUser.role !== 'employee') return navigate('/auth');
+    if (!token || currentUser?.role !== 'employee') return navigate('/auth');
     fetchTickets();
   }, [navigate, currentUser, fetchTickets]);
   // fetchTickets moved above
@@ -51,7 +60,11 @@ export default function EmployeeDashboard() {
       <div className="md:col-span-1 space-y-6">
         <h2 className="text-[28px] tracking-display-md font-medium text-brand-ink mb-6">My Workspace</h2>
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-          {tickets.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+            </div>
+          ) : tickets.length === 0 ? (
             <div className="p-8 text-center text-sm text-brand-ink-mute border border-brand-hairline rounded-lg bg-brand-canvas-soft">
               No tickets currently assigned to you.
             </div>

@@ -268,9 +268,13 @@ Full API docs: see `docs/Nature_Tek_Solar_Grievance_PRD.md` Section 10
 - **Mass Assignment Protection:** Integrated `{ runValidators: true }` across all status and assignment updates.
 - **API Key Proxy:** Built a dedicated `/v1/media/upload` proxy route to securely upload images to ImgBB without exposing `VITE_IMGBB_API_KEY` to the public frontend.
 
-### Performance & UX
-- **Page Visibility API Polling:** `NotificationBell.jsx` now intelligently pauses auto-polling when the browser tab is hidden, dramatically reducing server bandwidth.
-- **Optimized Initial Load:** Re-architected `AdminDashboard.jsx` to load all resources simultaneously via `Promise.all` with a unified loading state.
+### Performance, Stability & UX
+- **Global Error Boundaries:** Prevented "White Screen of Death" UI crashes by implementing React error catchers across the app shell.
+- **Null-Safe Edge Cases:** Handled malicious or malformed LocalStorage states to gracefully bounce out invalid users instead of crashing.
+- **Main-Thread Freezes:** Restricted base64 file readers explicitly to `image/*` to protect against UI thread locks caused by processing oversized video files.
+- **Graceful API Fallbacks:** Implemented a global JSON fallback on unmatched routes so frontend Axios parsers don't break on Express's default HTML 404 pages.
+- **Page Visibility API Polling:** `NotificationBell.jsx` now intelligently pauses auto-polling when the browser tab is hidden, dramatically reducing server bandwidth, and uses functional state updates to prevent stale closure data losses.
+- **Optimized Initial Load:** Added unified UI loading skeletons to dashboards to prevent data-flash jarring effects, and re-architected `AdminDashboard.jsx` to load all resources simultaneously via `Promise.all`.
 - **SLA Cron Optimization:** Replaced highly inefficient N+1 queries in `sla.checker.js` with batch `insertMany` and `updateMany` operations.
 - **Mongoose Indexes:** Implemented indexing across Complaints, Users, and Notifications for high-speed lookups.
 

@@ -52,7 +52,7 @@ export default function NotificationBell() {
   const markAsRead = async (id, ticketId) => {
     try {
       await api.patch(`/v1/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n._id === id ? { ...n, is_read: true } : n));
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, is_read: true } : n));
       setIsOpen(false);
       if (ticketId) navigate(`/track?id=${ticketId}`);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function NotificationBell() {
   const markAllAsRead = async () => {
     try {
       await api.patch('/v1/notifications/read-all');
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.error(err);
       toast.error('Failed to mark all as read');

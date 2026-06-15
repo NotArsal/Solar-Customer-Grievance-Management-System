@@ -37,6 +37,10 @@ app.use('/v1/routing-categories', categoryRoutes);
 app.use('/v1/notifications', notificationRoutes);
 app.use('/v1/reports', reportRoutes);
 
+app.use('*', (req, res) => {
+  res.status(404).json({ status: 'error', message: 'Route not found' });
+});
+
 app.use(errorHandler);
 
 export default app;
