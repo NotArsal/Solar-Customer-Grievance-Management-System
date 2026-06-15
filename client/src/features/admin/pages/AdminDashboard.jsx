@@ -130,6 +130,7 @@ export default function AdminDashboard() {
                 <tr className="bg-brand-canvas-soft border-b border-brand-hairline text-[11px] uppercase tracking-wider text-brand-ink-mute font-medium">
                   <th className="p-4">Ticket ID</th>
                   <th className="p-4">Customer</th>
+                  <th className="p-4">Issue</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Priority</th>
                   <th className="p-4">SLA</th>
@@ -142,6 +143,29 @@ export default function AdminDashboard() {
                   <tr key={t._id} className="border-b border-brand-hairline-cool hover:bg-brand-canvas-soft transition-colors">
                     <td className="p-4 font-mono font-medium text-brand-ink">{t.ticket_id}</td>
                     <td className="p-4 text-brand-ink-secondary">{t.customer_name}</td>
+                    <td className="p-4">
+                      <div className="relative group">
+                        <div className="text-sm font-medium text-brand-ink-secondary max-w-[150px] truncate cursor-pointer underline decoration-brand-hairline-strong underline-offset-4 hover:decoration-brand-primary transition-colors">
+                          {t.subject}
+                        </div>
+                        <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50 w-80 p-4 bg-brand-canvas border border-brand-hairline-strong shadow-level-2 rounded-md text-sm text-brand-ink whitespace-pre-wrap">
+                          <span className="font-medium text-brand-ink block mb-2 border-b border-brand-hairline-cool pb-1">Full Description</span>
+                          <span className="text-xs text-brand-ink-mute block mb-2">{t.description}</span>
+                          {t.attachments?.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-brand-hairline-cool">
+                              <span className="font-medium text-[10px] uppercase text-brand-ink-mute block mb-2">Attachments</span>
+                              <div className="flex flex-wrap gap-2">
+                                {t.attachments.map((url, idx) => (
+                                  <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-12 h-12 rounded border border-brand-hairline overflow-hidden hover:border-brand-primary transition-colors">
+                                    <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wide border shadow-level-1 ${getStatusStyles(t.status).badge}`}>
                         {t.status}
