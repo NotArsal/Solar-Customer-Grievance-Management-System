@@ -161,6 +161,7 @@ erDiagram
 ### 4.1 Frontend Layer (Vercel)
 - **Framework:** React.js + Vite.
 - **State & Sync:** Managed via Custom Hooks wrapping Axios requests, with `React Hot Toast` for transient state feedback.
+- **Resilience:** Wrapped in a top-level `<ErrorBoundary>` to catch React rendering crashes, ensuring a graceful "Something went wrong" UI instead of the generic White Screen of Death.
 - **Resource Optimization:** The `NotificationBell` component utilizes the `document.visibilityState` API. If the user minimizes the tab, polling halts entirely, cutting idle backend bandwidth by over 90%.
 
 ### 4.2 Backend Layer (Render)
@@ -168,6 +169,7 @@ erDiagram
   - **Upload Proxy (`/v1/media/upload`):** Prevents exposure of external API keys. Validates base64 signatures to ensure the payload is actually an image (PNG/JPEG/WEBP) and blocks SSRF vectors.
   - **NoSQL Injection Guard:** Enforces strict type-casting in critical controllers (e.g., `auth.controller.js`) preventing object-injection (`$ne`, `$gt`) bypasses.
   - **Mass Assignment:** Uses Mongoose `{ runValidators: true }` paired with explicit object destructuring to ensure employees cannot arbitrarily alter restricted fields (like `customer_phone` or `sla_due_at`).
+  - **Graceful Fallbacks:** Incorporates an `app.use('*')` JSON interceptor for 404s, guaranteeing the frontend Axios interceptors receive parsable JSON errors instead of raw HTML default dumps.
 
 ### 4.3 Data Layer (MongoDB Atlas)
 - **Indexing Strategy:** 
