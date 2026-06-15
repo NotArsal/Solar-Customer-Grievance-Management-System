@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getStatusStyles } from '../../../utils/statusColors';
 
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -69,15 +70,17 @@ export default function EmployeeDashboard() {
               No tickets currently assigned to you.
             </div>
           ) : (
-            tickets.map(t => (
+            tickets.map(t => {
+              const styles = getStatusStyles(t.status);
+              return (
               <div 
                 key={t._id} 
                 onClick={() => { setSelectedTicket(t); setStatus(t.status); setUpdateNote(''); }}
-                className={`p-4 border rounded-md cursor-pointer transition-colors ${selectedTicket?._id === t._id ? 'border-brand-primary bg-brand-canvas shadow-level-1' : 'border-brand-hairline bg-brand-canvas-soft hover:bg-brand-canvas hover:border-brand-hairline-strong'}`}
+                className={`p-4 border rounded-md cursor-pointer transition-colors ${selectedTicket?._id === t._id ? 'border-brand-primary bg-brand-canvas shadow-level-1' : `border-brand-hairline hover:border-brand-hairline-strong ${styles.rowBg || 'bg-brand-canvas-soft'}`} ${styles.bgSide}`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-mono text-sm font-medium text-brand-ink">{t.ticket_id}</span>
-                  <span className="text-[10px] uppercase font-medium bg-brand-canvas border border-brand-hairline px-2 py-0.5 rounded-sm text-brand-ink-secondary">{t.status}</span>
+                  <span className={`text-[10px] uppercase font-medium px-2 py-0.5 rounded-sm border ${styles.badge}`}>{t.status}</span>
                 </div>
                 <p className="text-sm font-medium text-brand-ink-secondary truncate">{t.subject}</p>
                 <div className="flex justify-between items-center mt-3 text-[10px] text-brand-ink-mute">
@@ -85,7 +88,7 @@ export default function EmployeeDashboard() {
                   {t.is_sla_breached && <span className="text-red-600 font-medium">SLA Breached</span>}
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
       </div>

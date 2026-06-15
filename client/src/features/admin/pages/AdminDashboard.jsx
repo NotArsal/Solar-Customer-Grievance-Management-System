@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getStatusStyles } from '../../../utils/statusColors';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('tickets');
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
                     <td className="p-4 font-mono font-medium text-brand-ink">{t.ticket_id}</td>
                     <td className="p-4 text-brand-ink-secondary">{t.customer_name}</td>
                     <td className="p-4">
-                      <span className="px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wide border border-brand-hairline-cool bg-brand-canvas text-brand-ink-secondary shadow-level-1">
+                      <span className={`px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wide border shadow-level-1 ${getStatusStyles(t.status).badge}`}>
                         {t.status}
                       </span>
                     </td>
