@@ -38,9 +38,10 @@ router.post('/upload', async (req, res) => {
     }
 
     const formData = new URLSearchParams();
-    formData.append('image', image.replace(/^data:image\/[a-z]+;base64,/, ''));
+    const base64Data = image.includes(',') ? image.split(',')[1] : image;
+    formData.append('image', base64Data);
     
-    const response = await axios.post(`https://api.imgbb.com/1/upload?key=${process.env.VITE_IMGBB_API_KEY || '1c0de0ad3650cd6da14dfb02d511cbcd'}`, formData, {
+    const response = await axios.post(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY || '30abce10cd582f4e4c62e89a27e2c38c'}`, formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
