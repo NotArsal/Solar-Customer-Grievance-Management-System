@@ -38,7 +38,12 @@ router.post('/upload', async (req, res) => {
     const base64Data = image.includes(',') ? image.split(',')[1] : image;
     formData.append('image', base64Data);
     
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY || '30abce10cd582f4e4c62e89a27e2c38c'}`, {
+    const apiKey = process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY;
+    if (!apiKey) {
+      throw new Error('IMGBB_API_KEY is not configured on the server');
+    }
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',
       body: formData,
       headers: {

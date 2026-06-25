@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import crypto from 'crypto';
 import { errorHandler } from './core/middleware/error.middleware.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
@@ -23,7 +23,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(morgan('dev'));
+
+// Telemetry & Observability: Inject Request ID and Structured JSON Logging
+app.use((req, res, next) => {
+  req.id = req.headers['x-request-id'] || crypto.randomUUID();
+  res.setHeader('x-request-id', req.id);
+  
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(JSON.stringify({
+      event: 'http_request',
+      requestId: req.id,
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      durationMs: duration
+    }));
+  });
+  next();
+});
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'CGMS API is running' });
