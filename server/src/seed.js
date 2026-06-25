@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
 import User from './modules/user/user.model.js';
 import Category from './modules/routing/category.model.js';
-
-dotenv.config({ path: '.env' });
 
 const seedDB = async () => {
   try {

@@ -1,4 +1,4 @@
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../../core/utils/asyncHandler.js';
 import Notification from './notification.model.js';
 
 export const getMyNotifications = asyncHandler(async (req, res) => {

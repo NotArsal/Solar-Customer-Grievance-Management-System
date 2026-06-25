@@ -1,4 +1,4 @@
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../../core/utils/asyncHandler.js';
 import Complaint from '../complaint/complaint.model.js';
 import User from '../user/user.model.js';
 

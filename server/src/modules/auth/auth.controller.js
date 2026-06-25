@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../../core/utils/asyncHandler.js';
 import User from '../user/user.model.js';
 
 export const customerRegister = asyncHandler(async (req, res) => {

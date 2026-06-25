@@ -1,4 +1,3 @@
-import cron from 'node-cron';
 import Complaint from '../modules/complaint/complaint.model.js';
 import Notification from '../modules/notification/notification.model.js';
 import User from '../modules/user/user.model.js';
@@ -56,5 +55,5 @@ export const initJobs = () => {
   checkSLA();
 
   // Then run every 10 minutes
-  cron.schedule('*/10 * * * *', checkSLA);
+  setInterval(checkSLA, 10 * 60 * 1000);
 };

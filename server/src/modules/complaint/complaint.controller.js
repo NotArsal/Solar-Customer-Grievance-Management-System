@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import asyncHandler from 'express-async-handler';
+import { asyncHandler } from '../../core/utils/asyncHandler.js';
 import Complaint from './complaint.model.js';
 import TicketHistory from './ticketHistory.model.js';
 import Counter from './counter.model.js';
