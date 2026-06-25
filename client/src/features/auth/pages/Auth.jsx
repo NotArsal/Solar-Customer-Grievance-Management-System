@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import api from '../../../config/axios';
+import api from '../../../config/api';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);

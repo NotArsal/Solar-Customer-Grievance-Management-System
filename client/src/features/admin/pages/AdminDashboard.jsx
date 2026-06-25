@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import api from '../../../config/axios';
+import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getStatusStyles } from '../../../utils/statusColors';
@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const fetchTickets = useCallback(async () => {
     try {
       const res = await api.get('/v1/complaints');
-      setTickets(res.data);
+      setTickets(res.data.complaints || []);
     } catch (err) {
       if (err.response?.status === 401) navigate('/auth');
     }
@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const fetchEmployees = useCallback(async () => {
     try {
       const res = await api.get('/v1/auth/employees');
-      setEmployees(res.data);
+      setEmployees(res.data.employees || []);
     } catch (err) {
       toast.error('Failed to load employees');
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-import api from '../../../config/axios';
+import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -79,7 +79,7 @@ export default function CustomerPortal() {
   const fetchMyTickets = async () => {
     try {
       const res = await api.get('/v1/complaints');
-      setMyTickets(res.data);
+      setMyTickets(res.data.complaints || []);
     } catch (err) {
       toast.error('Failed to load my tickets');
     } finally {

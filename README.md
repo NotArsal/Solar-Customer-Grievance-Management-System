@@ -53,7 +53,7 @@ cgms-natureteksolar/
 │   ├── controllers/                 # Route logic and handlers
 │   ├── middleware/                  # JWT auth, error handling
 │   ├── services/                    # Nodemailer, Telegram API, SLA logic
-│   ├── jobs/                        # node-cron scheduled tasks
+│   ├── jobs/                        # Native setInterval scheduled tasks
 │   └── server.js
 │
 ├── docs/                            # Project specifications and diagrams
@@ -70,8 +70,8 @@ cgms-natureteksolar/
 
 | Layer | Technologies |
 |---|---|
-| **Frontend** | React 18, Vite, Tailwind CSS, React Router v6, Axios, React Hot Toast |
-| **Backend** | Node.js 20 LTS, Express.js, JWT Authentication |
+| **Frontend** | React 18, Vite, Tailwind CSS, React Router v6, Native Fetch, React Hot Toast |
+| **Backend** | Node.js 22 LTS, Express.js, JWT Authentication |
 | **Database** | MongoDB Atlas, Mongoose ODM |
 | **External APIs** | node-telegram-bot-api, Nodemailer (Gmail SMTP), ImgBB API |
 | **Infrastructure** | Vercel (Frontend), Render (Backend) |
@@ -277,6 +277,11 @@ Full API docs: see `docs/Nature_Tek_Solar_Grievance_PRD.md` Section 10
 - **Optimized Initial Load:** Added unified UI loading skeletons to dashboards to prevent data-flash jarring effects, and re-architected `AdminDashboard.jsx` to load all resources simultaneously via `Promise.all`.
 - **SLA Cron Optimization:** Replaced highly inefficient N+1 queries in `sla.checker.js` with batch `insertMany` and `updateMany` operations.
 - **Mongoose Indexes:** Implemented indexing across Complaints, Users, and Notifications for high-speed lookups.
+
+### CI/CD Pipeline
+- **GitHub Actions:** Integrated automated testing, linting, and security audits (`npm audit`) for every PR pushed to `main`.
+- **Test Gate:** Added Jest + Supertest for backend smoke tests, and Vitest + React Testing Library for frontend rendering checks.
+- **Production Pre-Launch Checklist:** Established robust launch rules governing JWT secrets, exact CORS origins, and rapid Rollback strategies via Render/Vercel dashboards.
 
 ---
 

@@ -136,14 +136,21 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
 export const trackComplaint = asyncHandler(async (req, res) => {
   const { ticket_id } = req.params;
-  const complaint = await Complaint.findOne({ ticket_id }).populate('assigned_to', 'name email');
+  
+  if (!/^NTS-\d{4}-\d{4}$/.test(String(ticket_id))) {
+    res.status(400);
+    throw new Error('Invalid ticket ID format');
+  }
+
+  const complaint = await Complaint.findOne({ ticket_id: String(ticket_id) }).populate('assigned_to', 'name email');
   if (!complaint) {
     res.status(404);
     throw new Error('Ticket not found');
   }
   
-  const history = await TicketHistory.find({ ticket_id, is_public: true })
+  const history = await TicketHistory.find({ ticket_id: String(ticket_id), is_public: true })
     .sort({ timestamp: -1 })
+    .limit(50)
     .populate('performed_by', 'name email');
     
   res.json({ complaint, history });
@@ -157,11 +164,25 @@ export const listComplaints = asyncHandler(async (req, res) => {
     query = { assigned_to: req.user.id };
   }
   
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
+
   const complaints = await Complaint.find(query)
     .sort({ created_at: -1 })
+    .skip(skip)
+    .limit(limit)
     .populate('assigned_to', 'name email')
     .lean();
-  res.json(complaints);
+    
+  const total = await Complaint.countDocuments(query);
+  
+  res.json({
+    complaints,
+    page,
+    pages: Math.ceil(total / limit),
+    total
+  });
 });
 
 export const updateStatus = asyncHandler(async (req, res) => {
@@ -195,13 +216,8 @@ export const updateStatus = asyncHandler(async (req, res) => {
       }
     }
   }
-  await Complaint.findByIdAndUpdate(id, {
-    $set: {
-      status: complaint.status,
-      resolved_at: complaint.resolved_at,
-      closed_at: complaint.closed_at
-    }
-  }, { runValidators: true });
+
+  await complaint.save();
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,
@@ -256,12 +272,9 @@ export const assignTicket = asyncHandler(async (req, res) => {
     }
   }
   
-  await Complaint.findByIdAndUpdate(id, {
-    $set: {
-      assigned_to: assignedToId,
-      reassignment_request: { is_requested: false, reason: '' }
-    }
-  }, { runValidators: true });
+  complaint.assigned_to = assignedToId;
+  complaint.reassignment_request = { is_requested: false, reason: '' };
+  await complaint.save();
 
   const history = new TicketHistory({
     ticket_id: complaint.ticket_id,

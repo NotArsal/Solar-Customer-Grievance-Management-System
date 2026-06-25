@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../../config/axios';
+import api from '../../../config/api';
 import { useSearchParams } from 'react-router-dom';
 
 export default function TrackTicket() {

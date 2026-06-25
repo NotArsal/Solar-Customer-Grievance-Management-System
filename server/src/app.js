@@ -17,7 +17,7 @@ const app = express();
 app.use(helmet());
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL 
+    ? (process.env.CLIENT_URL || 'https://industryproject-frontend.vercel.app')
     : (process.env.CLIENT_URL || 'http://localhost:5173')
 };
 app.use(cors(corsOptions));
