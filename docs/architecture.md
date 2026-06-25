@@ -165,10 +165,13 @@ erDiagram
 - **Resource Optimization:** The `NotificationBell` component utilizes the `document.visibilityState` API. If the user minimizes the tab, polling halts entirely, cutting idle backend bandwidth by over 90%.
 
 ### 4.2 Backend Layer (Render)
+- **Architecture Patterns:**
+  - **Structured Telemetry:** Implements custom JSON-structured logging with unique Correlation IDs (`x-request-id`) injected into every HTTP request, allowing deep log querying via cloud aggregators.
+  - **State Dispatcher Pattern:** The Telegram conversational flow utilizes an explicitly mapped dictionary dispatcher rather than chained conditionals, eliminating memory leaks via a dedicated garbage-collected TTL session store.
 - **Security Boundary:**
   - **Upload Proxy (`/v1/media/upload`):** Prevents exposure of external API keys. Validates base64 signatures to ensure the payload is actually an image (PNG/JPEG/WEBP) and blocks SSRF vectors.
   - **NoSQL Injection Guard:** Enforces strict type-casting in critical controllers (e.g., `auth.controller.js`) preventing object-injection (`$ne`, `$gt`) bypasses.
-  - **Mass Assignment:** Uses Mongoose `{ runValidators: true }` paired with explicit object destructuring to ensure employees cannot arbitrarily alter restricted fields (like `customer_phone` or `sla_due_at`).
+  - **Mass Assignment:** Uses Mongoose `{ runValidators: true }` paired with explicit object destructuring to ensure employees cannot arbitrarily alter restricted fields.
   - **Graceful Fallbacks:** Incorporates an `app.use('*')` JSON interceptor for 404s, guaranteeing the frontend fetch wrappers receive parsable JSON errors instead of raw HTML default dumps.
 
 ### 4.3 Data Layer (MongoDB Atlas)
