@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import App from '../App.jsx';
 
 // Mock localStorage
@@ -8,7 +9,7 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-global.localStorage = localStorageMock;
+globalThis.localStorage = localStorageMock;
 
 describe('App Smoke Test', () => {
   it('should render without crashing', () => {

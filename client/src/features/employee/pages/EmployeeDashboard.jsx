@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -15,20 +15,15 @@ export default function EmployeeDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const currentUser = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem('user')) || {};
-    } catch {
-      return {};
-    }
-  }, []);
+
 
   const fetchTickets = useCallback(async () => {
     try {
       const res = await api.get('/v1/complaints');
       setTickets(res.data.complaints || []);
-    } catch (err) {
-      if (err.response?.status === 401) navigate('/auth');
+    } catch {
+      toast.error('Session expired or unauthorized');
+      navigate('/auth');
     } finally {
       setIsLoading(false);
     }
@@ -36,9 +31,15 @@ export default function EmployeeDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token || currentUser?.role !== 'employee') return navigate('/auth');
-    fetchTickets();
-  }, [navigate, currentUser, fetchTickets]);
+    let user;
+    try {
+      user = JSON.parse(localStorage.getItem('user'));
+    } catch {
+      user = {};
+    }
+    if (!token || user?.role !== 'employee') return navigate('/auth');
+    setTimeout(() => fetchTickets(), 0);
+  }, [navigate, fetchTickets]);
   // fetchTickets moved above
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -49,7 +50,7 @@ export default function EmployeeDashboard() {
       setUpdateNote('');
       toast.success('Ticket updated successfully!');
       fetchTickets();
-    } catch (err) {
+    } catch {
       toast.error('Failed to update ticket');
     } finally {
       setIsSubmitting(false);
@@ -178,7 +179,7 @@ export default function EmployeeDashboard() {
                       toast.success('Reassignment requested');
                       setReassignReason('');
                       fetchTickets();
-                    } catch (err) { 
+                    } catch { 
                       toast.error('Error requesting reassignment'); 
                     } finally {
                       setIsReassigning(false);

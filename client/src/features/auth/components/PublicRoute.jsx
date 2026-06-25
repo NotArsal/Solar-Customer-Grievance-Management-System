@@ -4,8 +4,15 @@ const PublicRoute = ({ children }) => {
   const userStr = localStorage.getItem('user');
   
   if (userStr) {
+    let user;
     try {
-      const user = JSON.parse(userStr);
+      user = JSON.parse(userStr);
+    } catch {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
+
+    if (user) {
       if (user.role === 'admin' || user.role === 'superadmin') {
         return <Navigate to="/admin" replace />;
       }
@@ -15,10 +22,6 @@ const PublicRoute = ({ children }) => {
       if (user.role === 'customer') {
         return <Navigate to="/portal" replace />;
       }
-    } catch (error) {
-      // If parsing fails, just clear it and render the public route
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
     }
   }
 

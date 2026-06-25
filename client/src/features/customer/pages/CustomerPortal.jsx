@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'));
   const [myTickets, setMyTickets] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ export default function CustomerPortal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingTickets, setIsLoadingTickets] = useState(true);
   const [productIssueMapping, setProductIssueMapping] = useState({});
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -31,18 +30,16 @@ export default function CustomerPortal() {
     };
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (!token || userData?.role !== 'customer') {
-      navigate('/auth');
-      return;
+  const fetchMyTickets = async () => {
+    try {
+      const res = await api.get('/v1/complaints');
+      setMyTickets(res.data.complaints || []);
+    } catch {
+      toast.error('Failed to load my tickets');
+    } finally {
+      setIsLoadingTickets(false);
     }
-    setUser(userData);
-    fetchMyTickets();
-    fetchCategories();
-  }, [navigate]);
+  };
 
   const fetchCategories = async () => {
     try {
@@ -62,10 +59,24 @@ export default function CustomerPortal() {
       if (err.name !== 'CanceledError') {
         toast.error('Failed to load issue categories');
       }
-    } finally {
-      setIsLoadingCategories(false);
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    if (!token || userData?.role !== 'customer') {
+      navigate('/auth');
+      return;
+    }
+    setTimeout(() => {
+      fetchMyTickets();
+      fetchCategories();
+    }, 0);
+  }, [navigate]);
+
+
 
 
   const handleProductChange = (e) => {
@@ -76,16 +87,7 @@ export default function CustomerPortal() {
     });
   };
 
-  const fetchMyTickets = async () => {
-    try {
-      const res = await api.get('/v1/complaints');
-      setMyTickets(res.data.complaints || []);
-    } catch (err) {
-      toast.error('Failed to load my tickets');
-    } finally {
-      setIsLoadingTickets(false);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

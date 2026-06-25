@@ -6,18 +6,19 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
     return <Navigate to="/auth" replace />;
   }
 
+  let user;
   try {
-    const user = JSON.parse(userStr);
-    if (!allowedRoles.includes(user.role)) {
-      // Redirect to unauthorized or just kick them out to login if unauthorized
-      return <Navigate to="/auth" replace />;
-    }
-    return children;
-  } catch (error) {
+    user = JSON.parse(userStr);
+  } catch {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     return <Navigate to="/auth" replace />;
   }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/auth" replace />;
+  }
+  return children;
 };
 
 export default ProtectedRoute;

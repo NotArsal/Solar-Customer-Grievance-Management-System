@@ -20,8 +20,9 @@ export default function AdminDashboard() {
     try {
       const res = await api.get('/v1/complaints');
       setTickets(res.data.complaints || []);
-    } catch (err) {
-      if (err.response?.status === 401) navigate('/auth');
+    } catch {
+      toast.error('Session expired or unauthorized');
+      navigate('/auth');
     }
   }, [navigate]);
 
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
     try {
       const res = await api.get('/v1/auth/employees');
       setEmployees(res.data.employees || []);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load employees');
     }
   }, []);
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
     try {
       const res = await api.get('/v1/reports/dashboard');
       setStats(res.data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load dashboard stats');
     }
   }, []);
@@ -47,7 +48,7 @@ export default function AdminDashboard() {
     try {
       const res = await api.get('/v1/routing-categories');
       setCategories(res.data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load routing categories');
     }
   }, []);
@@ -57,13 +58,16 @@ export default function AdminDashboard() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!token || (user.role !== 'admin' && user.role !== 'superadmin')) return navigate('/auth');
     
-    setIsLoading(true);
-    Promise.all([
-      fetchTickets(),
-      fetchEmployees(),
-      fetchStats(),
-      fetchCategories()
-    ]).finally(() => setIsLoading(false));
+    let isMounted = true;
+    setTimeout(() => {
+      Promise.all([
+        fetchTickets(),
+        fetchEmployees(),
+        fetchStats(),
+        fetchCategories()
+      ]).finally(() => { if (isMounted) setIsLoading(false); });
+    }, 0);
+    return () => { isMounted = false; };
   }, [navigate, fetchTickets, fetchEmployees, fetchStats, fetchCategories]);
 
   // Functions moved above with useCallback
@@ -74,7 +78,7 @@ export default function AdminDashboard() {
       await api.patch(`/v1/complaints/${ticketId}/assign`, { assigned_to: employeeId });
       toast.success('Ticket assigned successfully!');
       fetchTickets();
-    } catch (err) { toast.error('Failed to assign ticket'); }
+    } catch { toast.error('Failed to assign ticket'); }
   };
 
   const handlePriorityOverride = async (ticketId, priority) => {
@@ -82,7 +86,7 @@ export default function AdminDashboard() {
       await api.patch(`/v1/complaints/${ticketId}/priority`, { priority, reason: 'Admin Override' });
       toast.success('Priority overridden successfully!');
       fetchTickets();
-    } catch (err) { toast.error('Failed to override priority'); }
+    } catch { toast.error('Failed to override priority'); }
   };
 
   const handleCreateCategory = async (e) => {
@@ -92,7 +96,7 @@ export default function AdminDashboard() {
       setNewCat({ name: '', priority: 'Medium', assigned_department: 'General', sla_hours: 48 });
       toast.success('Category created successfully!');
       fetchCategories();
-    } catch (err) { toast.error('Failed to create category'); }
+    } catch { toast.error('Failed to create category'); }
   };
 
   const handleDeleteCategory = async (id) => {
@@ -100,7 +104,7 @@ export default function AdminDashboard() {
       await api.delete(`/v1/routing-categories/${id}`);
       toast.success('Category deleted successfully!');
       fetchCategories();
-    } catch (err) { toast.error('Failed to delete category'); }
+    } catch { toast.error('Failed to delete category'); }
   };
 
   return (

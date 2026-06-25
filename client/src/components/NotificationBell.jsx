@@ -8,8 +8,17 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/v1/notifications');
+      setNotifications(res.data);
+    } catch {
+      console.error('Failed to fetch notifications');
+    }
+  };
+
   useEffect(() => {
-    fetchNotifications();
+    setTimeout(fetchNotifications, 0);
     let intervalId;
 
     const startPolling = () => {
@@ -38,25 +47,13 @@ export default function NotificationBell() {
     };
   }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get('/v1/notifications');
-      setNotifications(res.data);
-    } catch (err) {
-      console.error('Failed to fetch notifications');
-      // Only toast on manual fetch, interval might be too noisy. We'll leave it as is or add a silent failure.
-      // Actually, since this runs on an interval, we shouldn't toast on every background failure, but I will toast for markAsRead.
-    }
-  };
-
   const markAsRead = async (id, ticketId) => {
     try {
       await api.patch(`/v1/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, is_read: true } : n));
       setIsOpen(false);
       if (ticketId) navigate(`/track?id=${ticketId}`);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to mark notification as read');
     }
   };
@@ -65,8 +62,7 @@ export default function NotificationBell() {
     try {
       await api.patch('/v1/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to mark all as read');
     }
   };

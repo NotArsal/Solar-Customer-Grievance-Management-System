@@ -19,7 +19,7 @@ const fetchApi = async (url, options = {}) => {
   let data;
   try {
     data = await response.json();
-  } catch (e) {
+  } catch {
     data = null;
   }
 

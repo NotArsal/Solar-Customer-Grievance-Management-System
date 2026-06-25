@@ -14,9 +14,10 @@ export default function TrackTicket() {
     if (searchParams.get('id')) {
       handleSearch(null, searchParams.get('id'));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const handleSearch = async (e, forceId = null) => {
+  async function handleSearch(e, forceId = null) {
     if (e) e.preventDefault();
     const idToTrack = forceId || ticketId;
     if (!idToTrack) return;
@@ -28,7 +29,7 @@ export default function TrackTicket() {
       const res = await api.get(`/v1/complaints/${idToTrack}/track`);
       setTicket(res.data.complaint);
       setHistory(res.data.history || []);
-    } catch (err) {
+    } catch {
       setError('Ticket not found or invalid ID.');
       setTicket(null);
       setHistory([]);
@@ -94,8 +95,8 @@ export default function TrackTicket() {
             <div className={`relative border-l-2 ml-4 space-y-8 ${ticket.status === 'resolved' ? 'border-brand-primary' : ticket.status === 'in-progress' ? 'border-brand-secondary' : ticket.status === 'unresolved' ? 'border-red-500' : 'border-brand-hairline-strong'}`}>
               {history.map((h, i) => {
                 const isLatest = i === 0;
-                let actionText = h.action;
-                let Icon = null;
+                let actionText;
+                let Icon;
                 let iconColor = "text-brand-ink-mute";
                 let bgColor = "bg-brand-canvas-soft";
                 let borderColor = "border-brand-hairline-strong";
