@@ -1,5 +1,4 @@
 import express from 'express';
-import axios from 'axios';
 
 const router = express.Router();
 
@@ -17,13 +16,11 @@ router.get('/telegram', async (req, res) => {
 
     const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file_path}`;
     
-    const response = await axios({
-      method: 'GET',
-      url: fileUrl,
-      responseType: 'stream'
-    });
-
-    response.data.pipe(res);
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const { Readable } = await import('stream');
+    Readable.fromWeb(response.body).pipe(res);
   } catch (err) {
     console.error('Error proxying media:', err.message);
     res.status(500).json({ message: 'Error fetching media' });
@@ -41,15 +38,20 @@ router.post('/upload', async (req, res) => {
     const base64Data = image.includes(',') ? image.split(',')[1] : image;
     formData.append('image', base64Data);
     
-    const response = await axios.post(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY || '30abce10cd582f4e4c62e89a27e2c38c'}`, formData, {
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY || '30abce10cd582f4e4c62e89a27e2c38c'}`, {
+      method: 'POST',
+      body: formData,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
 
-    res.json(response.data);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || 'Upload failed');
+
+    res.json(data);
   } catch (err) {
-    console.error('ImgBB upload error:', err?.response?.data || err.message);
+    console.error('ImgBB upload error:', err.message);
     res.status(500).json({ message: 'Error uploading image' });
   }
 });

@@ -55,6 +55,6 @@ export const initJobs = () => {
   // Run immediately on startup
   checkSLA();
 
-  // Then run every hour
-  cron.schedule('0 * * * *', checkSLA);
+  // Then run every 10 minutes
+  cron.schedule('*/10 * * * *', checkSLA);
 };

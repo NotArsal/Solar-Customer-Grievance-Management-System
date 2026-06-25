@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import User from '../models/User.js';
+import User from './modules/user/user.model.js';
+import Category from './modules/routing/category.model.js';
 
 dotenv.config({ path: '.env' });
 
@@ -36,6 +37,35 @@ const seedDB = async () => {
         is_active: true
       });
       console.log('Employee user created: staff@natureteksolar.com / staff123');
+    }
+
+    const categories = [
+      { name: "Physical Damage (Cracks/Shatter)", assigned_department: "Solar Panel", priority: "High", sla_hours: 24 },
+      { name: "Low Energy Output", assigned_department: "Solar Panel", priority: "Medium", sla_hours: 48 },
+      { name: "Sparking / Wiring Issue", assigned_department: "Solar Panel", priority: "Critical", sla_hours: 12 },
+      { name: "Debris / Shading Issue", assigned_department: "Solar Panel", priority: "Low", sla_hours: 72 },
+      { name: "Not Turning On", assigned_department: "Inverter", priority: "High", sla_hours: 24 },
+      { name: "Error Code Displayed", assigned_department: "Inverter", priority: "Medium", sla_hours: 48 },
+      { name: "Wi-Fi / Monitoring Disconnect", assigned_department: "Inverter", priority: "Low", sla_hours: 72 },
+      { name: "Overheating", assigned_department: "Inverter", priority: "Critical", sla_hours: 12 },
+      { name: "Not Holding Charge", assigned_department: "Battery", priority: "High", sla_hours: 24 },
+      { name: "Battery Replacement", assigned_department: "Battery", priority: "Medium", sla_hours: 48 },
+      { name: "Swelling / Leaking", assigned_department: "Battery", priority: "Critical", sla_hours: 12 },
+      { name: "Fast Discharging", assigned_department: "Battery", priority: "Medium", sla_hours: 48 },
+      { name: "Billing Query", assigned_department: "Service", priority: "Low", sla_hours: 72 },
+      { name: "Installation Check", assigned_department: "Service", priority: "Medium", sla_hours: 48 },
+      { name: "Other", assigned_department: "Solar Panel", priority: "Medium", sla_hours: 48 },
+      { name: "Other", assigned_department: "Inverter", priority: "Medium", sla_hours: 48 },
+      { name: "Other", assigned_department: "Battery", priority: "Medium", sla_hours: 48 },
+      { name: "Other", assigned_department: "Service", priority: "Medium", sla_hours: 48 }
+    ];
+
+    for (const cat of categories) {
+      const exists = await Category.findOne({ name: cat.name, assigned_department: cat.assigned_department });
+      if (!exists) {
+        await Category.create(cat);
+        console.log(`Seeded category: ${cat.name} (${cat.assigned_department})`);
+      }
     }
 
     mongoose.connection.close();

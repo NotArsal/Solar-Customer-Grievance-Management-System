@@ -4,34 +4,7 @@ import api from '../../../config/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-const productIssueMapping = {
-  "Solar Panel": [
-    "Physical Damage (Cracks/Shatter)", 
-    "Low Energy Output", 
-    "Sparking / Wiring Issue", 
-    "Debris / Shading Issue",
-    "Other"
-  ],
-  "Inverter": [
-    "Not Turning On", 
-    "Error Code Displayed", 
-    "Wi-Fi / Monitoring Disconnect", 
-    "Overheating",
-    "Other"
-  ],
-  "Battery": [
-    "Not Holding Charge", 
-    "Battery Replacement", 
-    "Swelling / Leaking", 
-    "Fast Discharging",
-    "Other"
-  ],
-  "Service": [
-    "Billing Query", 
-    "Installation Check", 
-    "Other"
-  ]
-};
+
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
@@ -45,6 +18,8 @@ export default function CustomerPortal() {
   const [ticketId, setTicketId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+  const [productIssueMapping, setProductIssueMapping] = useState({});
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -66,7 +41,31 @@ export default function CustomerPortal() {
     }
     setUser(userData);
     fetchMyTickets();
+    fetchCategories();
   }, [navigate]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/v1/routing-categories', {
+        signal: abortControllerRef.current?.signal
+      });
+      const categories = res.data;
+      const mapping = {};
+      categories.forEach(cat => {
+        if (!mapping[cat.assigned_department]) {
+          mapping[cat.assigned_department] = [];
+        }
+        mapping[cat.assigned_department].push(cat.name);
+      });
+      setProductIssueMapping(mapping);
+    } catch (err) {
+      if (err.name !== 'CanceledError') {
+        toast.error('Failed to load issue categories');
+      }
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
 
 
   const handleProductChange = (e) => {
