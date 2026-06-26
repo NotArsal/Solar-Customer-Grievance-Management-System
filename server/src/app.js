@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { errorHandler } from './core/middleware/error.middleware.js';
 
@@ -23,6 +24,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { status: 'error', message: 'Too many requests from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/v1/', globalLimiter);
 
 // Telemetry & Observability: Inject Request ID and Structured JSON Logging
 app.use((req, res, next) => {

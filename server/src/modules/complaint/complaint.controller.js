@@ -48,7 +48,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
     name: category, 
     assigned_department: product_type, 
     is_active: true 
-  });
+  }).lean();
   if (!categoryDoc) {
     res.status(400);
     throw new Error('Invalid or inactive category selected');
@@ -142,7 +142,7 @@ export const trackComplaint = asyncHandler(async (req, res) => {
     throw new Error('Invalid ticket ID format');
   }
 
-  const complaint = await Complaint.findOne({ ticket_id: String(ticket_id) }).populate('assigned_to', 'name email');
+  const complaint = await Complaint.findOne({ ticket_id: String(ticket_id) }).populate('assigned_to', 'name email').lean();
   if (!complaint) {
     res.status(404);
     throw new Error('Ticket not found');
@@ -151,7 +151,8 @@ export const trackComplaint = asyncHandler(async (req, res) => {
   const history = await TicketHistory.find({ ticket_id: String(ticket_id), is_public: true })
     .sort({ timestamp: -1 })
     .limit(50)
-    .populate('performed_by', 'name email');
+    .populate('performed_by', 'name email')
+    .lean();
     
   res.json({ complaint, history });
 });
@@ -164,8 +165,8 @@ export const listComplaints = asyncHandler(async (req, res) => {
     query = { assigned_to: req.user.id };
   }
   
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20));
   const skip = (page - 1) * limit;
 
   const complaints = await Complaint.find(query)
@@ -206,8 +207,9 @@ export const updateStatus = asyncHandler(async (req, res) => {
   if (status === 'unresolved') complaint.closed_at = new Date();
 
   // If transitioning to a terminal state from a non-terminal state
-  if ((status === 'resolved' || status === 'unresolved') && 
-      (from_status !== 'resolved' && from_status !== 'unresolved')) {
+  const isTerminal = (s) => ['resolved', 'unresolved', 'closed'].includes(s);
+  
+  if (isTerminal(status) && !isTerminal(from_status)) {
     if (complaint.assigned_to) {
       const staffMember = await User.findById(complaint.assigned_to);
       if (staffMember && staffMember.activeTicketsCount > 0) {
