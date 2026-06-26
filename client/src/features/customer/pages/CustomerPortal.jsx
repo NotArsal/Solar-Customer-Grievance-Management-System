@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +15,7 @@ export default function CustomerPortal() {
   const [formData, setFormData] = useState({
     product_type: '', category: '', subject: '', description: '', attachments: []
   });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [ticketId, setTicketId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingTickets, setIsLoadingTickets] = useState(true);
@@ -29,6 +30,22 @@ export default function CustomerPortal() {
       }
     };
   }, []);
+
+  const onDrop = useCallback(acceptedFiles => {
+    setFiles(prev => [...prev, ...acceptedFiles]);
+  }, []);
+  
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.png', '.jpg'],
+      'application/pdf': ['.pdf']
+    }
+  });
+
+  const removeFile = (indexToRemove) => {
+    setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
 
   const fetchMyTickets = async () => {
     try {
@@ -93,20 +110,22 @@ export default function CustomerPortal() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      let attachmentUrl = null;
-      if (file) {
-        const base64Img = await new Promise((resolve, reject) => {
-           const reader = new FileReader();
-           reader.readAsDataURL(file);
-           reader.onload = () => resolve(reader.result);
-           reader.onerror = error => reject(error);
-        });
-
-        const uploadRes = await api.post('/v1/media/upload', 
-          { image: base64Img },
-          { signal: abortControllerRef.current?.signal }
-        );
-        attachmentUrl = uploadRes.data.data.url;
+      let attachmentUrls = [];
+      if (files.length > 0) {
+        for (const f of files) {
+          const base64Img = await new Promise((resolve, reject) => {
+             const reader = new FileReader();
+             reader.readAsDataURL(f);
+             reader.onload = () => resolve(reader.result);
+             reader.onerror = error => reject(error);
+          });
+  
+          const uploadRes = await api.post('/v1/media/upload', 
+            { image: base64Img },
+            { signal: abortControllerRef.current?.signal }
+          );
+          attachmentUrls.push(uploadRes.data.data.url);
+        }
       }
 
       const generatedSubject = formData.description.length > 50 
@@ -121,8 +140,8 @@ export default function CustomerPortal() {
         customer_phone: user.phone || 'N/A'
       };
       
-      if (attachmentUrl) {
-        payload.attachments = [attachmentUrl];
+      if (attachmentUrls.length > 0) {
+        payload.attachments = attachmentUrls;
       }
 
       const res = await api.post('/v1/complaints', payload);
@@ -139,7 +158,7 @@ export default function CustomerPortal() {
   const resetForm = () => {
     setTicketId(null);
     setFormData(prev => ({ ...prev, subject: '', description: '' }));
-    setFile(null);
+    setFiles([]);
   };
 
   if (!user) return null;
@@ -215,8 +234,48 @@ export default function CustomerPortal() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-brand-ink-mute mb-2">Attachment (Optional)</label>
-                <input type="file" accept="image/*" className="input-field text-sm bg-brand-canvas-soft" onChange={e => setFile(e.target.files[0])} disabled={isSubmitting} />
+                <label className="block text-xs font-medium text-brand-ink-mute mb-2">Attachments (Optional)</label>
+                <div 
+                  {...getRootProps()} 
+                  className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${isDragActive ? 'border-brand-primary bg-brand-primary/5' : 'border-brand-hairline-strong bg-brand-canvas-soft hover:bg-brand-canvas'}`}
+                >
+                  <input {...getInputProps()} disabled={isSubmitting} />
+                  <svg className="mx-auto h-8 w-8 text-brand-ink-mute mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  {isDragActive ? (
+                    <p className="text-sm font-medium text-brand-primary">Drop the files here...</p>
+                  ) : (
+                    <p className="text-sm text-brand-ink-mute">Drag & drop files here, or click to select files</p>
+                  )}
+                  <p className="text-xs text-brand-ink-faint mt-1">Supports Images and PDFs</p>
+                </div>
+
+                {files.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {files.map((f, idx) => (
+                      <div key={idx} className="relative group border border-brand-hairline rounded-md overflow-hidden bg-white shadow-sm flex items-center justify-center p-2 h-20">
+                        <button 
+                          type="button" 
+                          onClick={() => removeFile(idx)} 
+                          className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-200"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        {f.type.startsWith('image/') ? (
+                          <img src={URL.createObjectURL(f)} alt="preview" className="max-h-full max-w-full object-contain" />
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            <svg className="w-8 h-8 text-red-500 mb-1" fill="currentColor" viewBox="0 0 24 24"><path d="M11.2 8H12V11.2H11.2V8ZM13.6 8H15.2V11.2H13.6V8ZM16 4H8C6.9 4 6 4.9 6 6V18C6 19.1 6.9 20 8 20H16C17.1 20 18 19.1 18 18V6C18 4.9 17.1 4 16 4ZM12.8 12.8H11.2V14.4H9.6V12.8H8V6.4H16V12.8H12.8Z"/></svg>
+                            <span className="text-[10px] text-brand-ink-secondary font-medium truncate w-full text-center">{f.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <button type="submit" className="btn-primary w-full md:w-auto mt-4" disabled={isSubmitting}>

@@ -3,6 +3,7 @@ import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getStatusStyles } from '../../../utils/statusColors';
+import SlaTimer from '../../../components/SlaTimer';
 
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -84,9 +85,9 @@ export default function EmployeeDashboard() {
                   <span className={`text-[10px] uppercase font-medium px-2 py-0.5 rounded-sm border ${styles.badge}`}>{t.status}</span>
                 </div>
                 <p className="text-sm font-medium text-brand-ink-secondary truncate">{t.subject}</p>
-                <div className="flex justify-between items-center mt-3 text-[10px] text-brand-ink-mute">
+                <div className="flex justify-between items-end mt-3 text-[10px] text-brand-ink-mute">
                   <span>{t.priority} Priority</span>
-                  {t.is_sla_breached && <span className="text-red-600 font-medium">SLA Breached</span>}
+                  <SlaTimer dueAt={t.sla_due_at} isBreached={t.is_sla_breached} status={t.status} />
                 </div>
               </div>
             )})

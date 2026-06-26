@@ -3,6 +3,7 @@ import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getStatusStyles } from '../../../utils/statusColors';
+import SlaTimer from '../../../components/SlaTimer';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('tickets');
@@ -184,8 +185,8 @@ export default function AdminDashboard() {
                         <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
                       </select>
                     </td>
-                    <td className="p-4">
-                      {t.is_sla_breached ? <span className="text-red-600 font-medium px-2 py-1 bg-red-50 rounded-sm border border-red-200 text-[10px] uppercase">Breached</span> : <span className="text-brand-primary-deep px-2 py-1 bg-brand-canvas rounded-sm border border-brand-hairline text-[10px] uppercase font-medium">On Track</span>}
+                    <td className="p-4 align-top">
+                      <SlaTimer dueAt={t.sla_due_at} isBreached={t.is_sla_breached} status={t.status} />
                     </td>
                     <td className="p-4">
                       <select 
