@@ -14,7 +14,7 @@ A comprehensive, role-based Customer Grievance Management System (CGMS) designed
 
 ## Key Features
 
-- **Public Customer Portal:** Frictionless ticket creation without user registration.
+- **Public Customer Portal:** Frictionless ticket creation without user registrations.
 - **OTP-Based Status Tracking:** Secure timeline view for customers to check ticket progress using their registered phone number.
 - **Employee & Admin Dashboards:** Dedicated workspaces for managing assignments, updating statuses, and adding internal/public notes.
 - **SLA Management Engine:** Hourly background cron jobs that calculate SLA deadlines and automatically flag breached tickets.
