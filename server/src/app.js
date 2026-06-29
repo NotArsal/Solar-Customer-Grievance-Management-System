@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { errorHandler } from './core/middleware/error.middleware.js';
+import { validatePayload } from './core/middleware/validate.middleware.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
 import complaintRoutes from './modules/complaint/complaint.routes.js';
@@ -25,6 +26,9 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Apply boundary validation to sanitize payload and prevent NoSQL Injection
+app.use(validatePayload);
+
 // Global rate limiter prevents abusive high-frequency requests from overwhelming the server.
 // Set to 100 requests per 15 minutes to comfortably allow typical SPA batch API fetching 
 // without triggering false positives for normal users on the frontend.
@@ -45,20 +49,28 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(JSON.stringify({
-      event: 'http_request',
-      requestId: req.id,
-      method: req.method,
-      url: req.originalUrl,
-      status: res.statusCode,
-      durationMs: duration
-    }));
+      console.log(JSON.stringify({
+        event: 'http_request',
+        requestId: req.id,
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        durationMs: duration,
+        ip: req.ip || req.connection.remoteAddress,
+        userAgent: req.get('user-agent')
+      }));
   });
   next();
 });
 
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'CGMS API is running' });
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'CGMS API is running',
+    uptime: process.uptime(),
+    memoryUsage: process.memoryUsage(),
+    timestamp: new Date()
+  });
 });
 
 app.use('/v1/auth', authRoutes);

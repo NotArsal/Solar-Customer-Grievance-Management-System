@@ -14,14 +14,18 @@ export default function EmployeeDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReassigning, setIsReassigning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const navigate = useNavigate();
 
 
 
-  const fetchTickets = useCallback(async () => {
+  const fetchTickets = useCallback(async (pageNum = 1, append = false) => {
     try {
-      const res = await api.get('/v1/complaints');
-      setTickets(res.data.complaints || []);
+      const res = await api.get(`/v1/complaints?page=${pageNum}&limit=20`);
+      setTickets(prev => append ? [...prev, ...(res.data.complaints || [])] : (res.data.complaints || []));
+      setHasMore(res.data.page < res.data.pages);
+      setPage(pageNum);
     } catch {
       toast.error('Session expired or unauthorized');
       navigate('/auth');
@@ -39,7 +43,7 @@ export default function EmployeeDashboard() {
       user = {};
     }
     if (!token || user?.role !== 'employee') return navigate('/auth');
-    setTimeout(() => fetchTickets(), 0);
+    setTimeout(() => fetchTickets(1), 0);
   }, [navigate, fetchTickets]);
   // fetchTickets moved above
   const handleUpdate = async (e) => {
@@ -50,7 +54,7 @@ export default function EmployeeDashboard() {
       setSelectedTicket(null);
       setUpdateNote('');
       toast.success('Ticket updated successfully!');
-      fetchTickets();
+      fetchTickets(1);
     } catch {
       toast.error('Failed to update ticket');
     } finally {
@@ -91,6 +95,14 @@ export default function EmployeeDashboard() {
                 </div>
               </div>
             )})
+          )}
+          {hasMore && !isLoading && (
+            <button 
+              onClick={() => fetchTickets(page + 1, true)}
+              className="w-full py-2 text-sm text-brand-primary border border-brand-hairline rounded-md hover:bg-brand-canvas transition-colors"
+            >
+              Load More
+            </button>
           )}
         </div>
       </div>
@@ -179,7 +191,7 @@ export default function EmployeeDashboard() {
                       await api.patch(`/v1/complaints/${selectedTicket._id}/reassign-request`, { reason: reassignReason });
                       toast.success('Reassignment requested');
                       setReassignReason('');
-                      fetchTickets();
+                      fetchTickets(1);
                     } catch { 
                       toast.error('Error requesting reassignment'); 
                     } finally {

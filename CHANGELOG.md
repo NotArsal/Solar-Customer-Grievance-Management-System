@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Global Error Boundaries:** Prevented "White Screen of Death" UI crashes by implementing React error catchers across the app shell.
 - **Mongoose Indexes:** Implemented indexing across Complaints, Users, and Notifications for high-speed lookups.
 
+### Deprecated
+- **Hardcoded OTP Fallback:** The unsecured static OTP (`123456`) in the authentication flow has been completely deprecated and removed (ADR-004). Deployers MUST now integrate an outbound notification gateway for OTPs.
+
 ### Changed
 - **Native Fetch Migration (ADR-001):** Completely stripped the bloated `axios` dependency across the entire frontend and backend. Built a lightweight native `fetch` interceptor wrapper (`api.js`) to drastically reduce bundle sizes.
 - **Native SLA Engine:** Removed the heavy `node-cron` dependency. SLA checks and escalations are now executed natively via lightweight `setInterval` processes in Node.js.
@@ -20,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SLA Engine Optimization:** Replaced highly inefficient N+1 queries in `sla.checker.js` with batch `insertMany` and `updateMany` operations.
 - **Code Simplification:** Refactored nested `status` validation logic inside `complaint.controller.js` to use flat array `.includes()` checking.
 - **Performance Optimization:** Injected Mongoose's `.lean()` method into the high-frequency `Complaint.findOne` and `TicketHistory.find` queries within the `trackComplaint` controller.
+- **Database Query Optimization (ADR-005):** Added a compound index (`{ status: 1, created_at: -1 }`) to the Complaint model to eliminate expensive in-memory sorts on Employee and Admin dashboards.
+- **Frontend Pagination Scalability:** Upgraded `EmployeeDashboard.jsx` to parse pagination metadata and handle infinite scroll / load more, allowing infinite ticket volume handling.
 
 ### Fixed
 - **Null-Safe Edge Cases:** Handled malicious or malformed LocalStorage states to gracefully bounce out invalid users.
@@ -35,3 +40,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mass Assignment Protection:** Integrated `{ runValidators: true }` across all status and assignment updates.
 - **API Key Proxy:** Built a dedicated `/v1/media/upload` proxy route to securely upload images to ImgBB without exposing keys to the public frontend.
 - **Data Quality:** Prevented negative skips and arbitrary limit flooding in `getEmployees` and `listComplaints` endpoints by aggressively clamping query parameters using `Math.max`.
+- **API Boundary Validation:** Created and injected `validate.middleware.js` to recursively scan all incoming payloads and strip out MongoDB injection strings before reaching the controller.
+- **Secure OTP Generation (ADR-004):** Replaced hardcoded fallback passwords with cryptographically secure generation using Node's `crypto.randomInt()`.
