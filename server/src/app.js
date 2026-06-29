@@ -25,6 +25,9 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Global rate limiter prevents abusive high-frequency requests from overwhelming the server.
+// Set to 100 requests per 15 minutes to comfortably allow typical SPA batch API fetching 
+// without triggering false positives for normal users on the frontend.
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs

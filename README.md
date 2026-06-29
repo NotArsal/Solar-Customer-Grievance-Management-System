@@ -260,35 +260,9 @@ Full API docs: see `docs/Nature_Tek_Solar_Grievance_PRD.md` Section 10
 
 ---
 
-## Recent Updates
+## Changelog
 
-### Security Enhancements
-- **Zero-Trust Telemetry Credentials:** Completely removed hardcoded fallback secrets for ImgBB. The upload proxy now enforces a strict fatal crash on boot if the API key is not supplied via the environment, ensuring zero secrets are left in the codebase.
-- **Telegram Proxy Validation:** Added strict SSRF and directory traversal checks to block malicious file paths.
-- **NoSQL Injection Prevention:** Enforced string casting in `auth.controller.js` to mitigate object-based NoSQL injection risks.
-- **Mass Assignment Protection:** Integrated `{ runValidators: true }` across all status and assignment updates.
-- **API Key Proxy:** Built a dedicated `/v1/media/upload` proxy route to securely upload images to ImgBB without exposing keys to the public frontend.
-
-### Architecture & Observability
-- **Native Fetch Migration (ADR-001):** Completely stripped the bloated `axios` dependency across the entire frontend and backend. Built a lightweight native `fetch` interceptor wrapper (`api.js`) to drastically reduce bundle sizes and limit third-party security vulnerabilities.
-- **Native SLA Engine:** Removed the heavy `node-cron` dependency. SLA checks and escalations are now executed natively via lightweight `setInterval` processes in Node.js.
-- **Structured JSON Logging:** Upgraded backend observability by replacing the default `morgan` text logger with a **Structured JSON Logger**. Every HTTP request now injects a `x-request-id` (Correlation ID) and outputs queryable JSON (method, URL, status, latency) for seamless integrations with DataDog/Render Log Streams.
-- **State Dispatcher Pattern (ADR-002):** Refactored a 100+ line monolithic `if/else` block inside the Telegram Bot into a cleanly mapped `stepHandlers` object, improving code readability and eliminating a massive memory leak via an active TTL session cleanup garbage collector.
-
-### Performance, Stability & UX
-- **Global Error Boundaries:** Prevented "White Screen of Death" UI crashes by implementing React error catchers across the app shell.
-- **Null-Safe Edge Cases:** Handled malicious or malformed LocalStorage states to gracefully bounce out invalid users instead of crashing.
-- **Main-Thread Freezes:** Restricted base64 file readers explicitly to `image/*` to protect against UI thread locks caused by processing oversized video files.
-- **Graceful API Fallbacks:** Implemented a global JSON fallback on unmatched routes so frontend parsers don't break on Express's default HTML 404 pages.
-- **Page Visibility API Polling:** `NotificationBell.jsx` now intelligently pauses auto-polling when the browser tab is hidden, dramatically reducing server bandwidth, and uses functional state updates to prevent stale closure data losses.
-- **Optimized Initial Load:** Added unified UI loading skeletons to dashboards to prevent data-flash jarring effects, and re-architected `AdminDashboard.jsx` to load all resources simultaneously via `Promise.all`.
-- **SLA Engine Optimization:** Replaced highly inefficient N+1 queries in `sla.checker.js` with batch `insertMany` and `updateMany` operations.
-- **Mongoose Indexes:** Implemented indexing across Complaints, Users, and Notifications for high-speed lookups.
-
-### CI/CD Pipeline
-- **GitHub Actions:** Integrated automated testing, linting, and security audits (`npm audit`) for every PR pushed to `main`.
-- **Test Gate:** Added node-native `--experimental-vm-modules` Jest testing gates to prevent failing deployments.
-- **Production Pre-Launch Checklist:** Established robust launch rules governing JWT secrets, exact CORS origins, and rapid Rollback strategies via Render/Vercel dashboards.
+For a detailed list of recent updates, bug fixes, performance optimizations, and security patches, please see the [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

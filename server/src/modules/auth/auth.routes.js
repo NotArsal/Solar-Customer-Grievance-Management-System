@@ -5,6 +5,9 @@ import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middl
 
 const router = express.Router();
 
+// Strict rate limiter for authentication routes to prevent credential stuffing 
+// and OTP brute-force attacks. 5 attempts per 15 minutes is aggressive but necessary 
+// to secure customer accounts and prevent SMS/email gateway spam.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 attempts per 15 minutes
