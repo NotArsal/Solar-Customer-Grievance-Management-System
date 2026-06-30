@@ -15,6 +15,8 @@ import notificationRoutes from './modules/notification/notification.routes.js';
 import reportRoutes from './modules/report/report.routes.js';
 
 const app = express();
+app.set('trust proxy', 1); // Trust the first proxy (Render) to correctly resolve client IP for rate limiting
+
 
 app.use(helmet());
 const corsOptions = {

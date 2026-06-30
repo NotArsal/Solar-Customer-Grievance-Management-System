@@ -9,7 +9,7 @@ const initTransporter = async () => {
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        pass: process.env.EMAIL_PASS.replace(/\s+/g, ''),
       }
     });
   } else {
@@ -55,6 +55,8 @@ export const sendTicketConfirmation = async (ticket) => {
 
     if (transporter.options.host === 'smtp.ethereal.email') {
       console.log("📨 Test Email sent! Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } else {
+      console.log(`✅ Email successfully sent to ${ticket.customer_email} (Message ID: ${info.messageId})`);
     }
   } catch (error) {
     console.error('Email send error:', error);
@@ -83,6 +85,8 @@ export const sendStatusUpdateEmail = async (ticket, newStatus, note) => {
 
     if (transporter.options.host === 'smtp.ethereal.email') {
       console.log("📨 Test Status Update Email sent! Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } else {
+      console.log(`✅ Status Update Email successfully sent to ${ticket.customer_email} (Message ID: ${info.messageId})`);
     }
   } catch (error) {
     console.error('Status Update Email send error:', error);
