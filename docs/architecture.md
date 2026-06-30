@@ -29,7 +29,7 @@ graph TD
 
     %% External Interfaces
     subgraph External ["External Services"]
-        TelegramBot["🤖 Telegram Bot API<br/>(Webhook Mode)"]:::external
+        TelegramBot["🤖 Telegram Bot API<br/>(Polling Mode)"]:::external
         ImgBB["🖼️ ImgBB API<br/>(Base64 Image Storage)"]:::external
         Nodemailer["📧 Gmail SMTP<br/>(Email Delivery)"]:::external
     end
@@ -38,6 +38,7 @@ graph TD
     subgraph Backend ["Backend Layer (Render)"]
         NodeAPI["⚙️ Node.js + Express Core API<br/>(REST Controllers, JWT Auth)"]:::backend
         SLAEngine["⏱️ Native Interval Engine<br/>(Hourly Breach Checks)"]:::backend
+        EmailQueue["📫 Email Retry Job<br/>(Queue processing)"]:::backend
         UploadProxy["🛡️ Media Upload Proxy<br/>(SSRF Protection)"]:::backend
     end
 
@@ -54,7 +55,8 @@ graph TD
 
     WebPortal -- "REST API (Native Fetch)" --> NodeAPI
     WebPortal -- "Base64 Payload" --> UploadProxy
-    TelegramBot -- "POST Webhook" --> NodeAPI
+    TelegramBot -- "Long Polling" --> NodeAPI
+    EmailQueue -- "Retries Failed Emails" --> Nodemailer
 
     UploadProxy -- "Secure Forwarding" --> ImgBB
     NodeAPI -- "Dispatches OTPs & Alerts" --> Nodemailer
@@ -170,7 +172,7 @@ erDiagram
   - **State Dispatcher Pattern:** The Telegram conversational flow utilizes an explicitly mapped dictionary dispatcher rather than chained conditionals, eliminating memory leaks via a dedicated garbage-collected TTL session store.
 - **Security Boundary:**
   - **Upload Proxy (`/v1/media/upload`):** Prevents exposure of external API keys. Validates base64 signatures to ensure the payload is actually an image (PNG/JPEG/WEBP) and blocks SSRF vectors.
-  - **NoSQL Injection Guard:** Enforces strict type-casting in critical controllers (e.g., `auth.controller.js`) preventing object-injection (`$ne`, `$gt`) bypasses.
+  - **Payload Validation Guard:** Enforces strict type-casting and schema validation using Zod for API routes, preventing malformed data and NoSQL Injection (`$ne`, `$gt`) bypasses.
   - **Mass Assignment:** Uses Mongoose `{ runValidators: true }` paired with explicit object destructuring to ensure employees cannot arbitrarily alter restricted fields.
   - **Graceful Fallbacks:** Incorporates an `app.use('*')` JSON interceptor for 404s, guaranteeing the frontend fetch wrappers receive parsable JSON errors instead of raw HTML default dumps.
 
@@ -182,6 +184,6 @@ erDiagram
   - Index on `{ status: 1, is_sla_breached: 1 }` to ensure the native SLA interval checker completes in milliseconds, even with thousands of open tickets.
 
 ### 4.4 External Integrations
-- **Telegram Bot:** Operates entirely over secure Webhooks rather than long-polling. Prevents double-processing and reduces overhead. Incorporates primitive keyword-matching auto-categorization.
+- **Telegram Bot:** Operates via long-polling for simplicity and robust connection handling. Prevents double-processing and reduces overhead. Incorporates primitive keyword-matching auto-categorization.
 - **ImgBB:** Headless image hosting. Storage URLs are embedded directly into the MongoDB document arrays. 
-- **Nodemailer:** Utilizes a generic SMTP transport layer, designed to be hot-swappable to SendGrid or Amazon SES when scaling is required.
+- **Nodemailer:** Utilizes a generic SMTP transport layer (configured for IPv4 to resolve Render networking constraints), backed by an asynchronous Email Retry Queue in MongoDB to handle temporary delivery failures.

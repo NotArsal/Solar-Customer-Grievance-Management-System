@@ -53,8 +53,8 @@ router.post('/upload', async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    console.error('ImgBB upload error:', err.message);
-    res.status(500).json({ message: 'Error uploading image' });
+    console.error('ImgBB upload error:', err.stack || err.message);
+    res.status(500).json({ message: 'Error uploading image', details: err.message });
   }
 });
 
