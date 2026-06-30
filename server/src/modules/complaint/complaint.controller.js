@@ -59,25 +59,17 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
   const priority = categoryDoc.priority;
 
-  // Auto-Assign based on routing department
-  let assigned_to = null;
-  let staffMember = await User.findOne({ 
+  // Auto-Assign based on routing department or fallback to any active employee
+  const staffMember = await User.findOne({ 
       role: 'employee', 
       specialization: categoryDoc.assigned_department, 
       is_active: true 
+  }).sort({ activeTicketsCount: 1 }) || await User.findOne({ 
+      role: 'employee', 
+      is_active: true 
   }).sort({ activeTicketsCount: 1 });
 
-  // Fallback: If no staff found for that specific department, assign to any active employee with least tickets
-  if (!staffMember) {
-      staffMember = await User.findOne({ 
-          role: 'employee', 
-          is_active: true 
-      }).sort({ activeTicketsCount: 1 });
-  }
-
-  if (staffMember) {
-      assigned_to = staffMember._id;
-  }
+  const assigned_to = staffMember ? staffMember._id : null;
 
   const customer_id = req.user && req.user.role === 'customer' ? req.user.id : null;
 
@@ -102,9 +94,8 @@ export const createComplaint = asyncHandler(async (req, res) => {
   });
   await complaint.save();
 
-  if (staffMember) {
-      staffMember.activeTicketsCount += 1;
-      await staffMember.save();
+  if (assigned_to) {
+      await User.updateOne({ _id: assigned_to }, { $inc: { activeTicketsCount: 1 } });
   }
 
   const history = new TicketHistory({
@@ -142,17 +133,19 @@ export const trackComplaint = asyncHandler(async (req, res) => {
     throw new Error('Invalid ticket ID format');
   }
 
-  const complaint = await Complaint.findOne({ ticket_id: String(ticket_id) }).populate('assigned_to', 'name email').lean();
+  const [complaint, history] = await Promise.all([
+    Complaint.findOne({ ticket_id: String(ticket_id) }).populate('assigned_to', 'name email').lean(),
+    TicketHistory.find({ ticket_id: String(ticket_id), is_public: true })
+      .sort({ timestamp: -1 })
+      .limit(50)
+      .populate('performed_by', 'name email')
+      .lean()
+  ]);
+
   if (!complaint) {
     res.status(404);
     throw new Error('Ticket not found');
   }
-  
-  const history = await TicketHistory.find({ ticket_id: String(ticket_id), is_public: true })
-    .sort({ timestamp: -1 })
-    .limit(50)
-    .populate('performed_by', 'name email')
-    .lean();
     
   res.json({ complaint, history });
 });
@@ -169,14 +162,15 @@ export const listComplaints = asyncHandler(async (req, res) => {
   const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20));
   const skip = (page - 1) * limit;
 
-  const complaints = await Complaint.find(query)
-    .sort({ created_at: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate('assigned_to', 'name email')
-    .lean();
-    
-  const total = await Complaint.countDocuments(query);
+  const [complaints, total] = await Promise.all([
+    Complaint.find(query)
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('assigned_to', 'name email')
+      .lean(),
+    Complaint.countDocuments(query)
+  ]);
   
   res.json({
     complaints,
@@ -209,14 +203,11 @@ export const updateStatus = asyncHandler(async (req, res) => {
   // If transitioning to a terminal state from a non-terminal state
   const isTerminal = (s) => ['resolved', 'unresolved', 'closed'].includes(s);
   
-  if (isTerminal(status) && !isTerminal(from_status)) {
-    if (complaint.assigned_to) {
-      const staffMember = await User.findById(complaint.assigned_to);
-      if (staffMember && staffMember.activeTicketsCount > 0) {
-        staffMember.activeTicketsCount -= 1;
-        await staffMember.save();
-      }
-    }
+  if (isTerminal(status) && !isTerminal(from_status) && complaint.assigned_to) {
+    await User.updateOne(
+      { _id: complaint.assigned_to, activeTicketsCount: { $gt: 0 } },
+      { $inc: { activeTicketsCount: -1 } }
+    );
   }
 
   await complaint.save();
@@ -257,21 +248,21 @@ export const assignTicket = asyncHandler(async (req, res) => {
 
   const assignedToId = assigned_to === '' ? null : assigned_to;
 
-  // Handle active count updates
-  if (complaint.assigned_to && complaint.assigned_to.toString() !== assignedToId) {
-    const oldStaff = await User.findById(complaint.assigned_to);
-    if (oldStaff && oldStaff.activeTicketsCount > 0) {
-      oldStaff.activeTicketsCount -= 1;
-      await oldStaff.save();
+  if (assignedToId) {
+    const newStaff = await User.findById(assignedToId);
+    if (!newStaff || !['employee', 'admin'].includes(newStaff.role)) {
+      res.status(400);
+      throw new Error('Invalid assignment target: User must be an employee or admin');
     }
+  }
+
+  // Handle active count updates atomically
+  if (complaint.assigned_to && complaint.assigned_to.toString() !== assignedToId) {
+    await User.updateOne({ _id: complaint.assigned_to, activeTicketsCount: { $gt: 0 } }, { $inc: { activeTicketsCount: -1 } });
   }
   
   if (assignedToId && (!complaint.assigned_to || complaint.assigned_to.toString() !== assignedToId)) {
-    const newStaff = await User.findById(assignedToId);
-    if (newStaff) {
-      newStaff.activeTicketsCount += 1;
-      await newStaff.save();
-    }
+    await User.updateOne({ _id: assignedToId }, { $inc: { activeTicketsCount: 1 } });
   }
   
   complaint.assigned_to = assignedToId;

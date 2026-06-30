@@ -82,13 +82,14 @@ export const getEmployees = asyncHandler(async (req, res) => {
   const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 50));
   const skip = (page - 1) * limit;
 
-  const employees = await User.find({ role: { $in: ['employee', 'admin'] }, is_active: true })
-    .select('name email role')
-    .skip(skip)
-    .limit(limit)
-    .lean();
-    
-  const total = await User.countDocuments({ role: { $in: ['employee', 'admin'] }, is_active: true });
+  const [employees, total] = await Promise.all([
+    User.find({ role: { $in: ['employee', 'admin'] }, is_active: true })
+      .select('name email role')
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    User.countDocuments({ role: { $in: ['employee', 'admin'] }, is_active: true })
+  ]);
     
   res.json({
     employees,
