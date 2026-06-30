@@ -38,7 +38,7 @@ export default function CustomerPortal() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.png', '.jpg']
+      'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.webp', '.heic', '.bmp', '.tif', '.tiff']
     }
   });
 
@@ -252,7 +252,7 @@ export default function CustomerPortal() {
                   ) : (
                     <p className="text-sm text-brand-ink-mute">Drag & drop files here, or click to select files</p>
                   )}
-                  <p className="text-xs text-brand-ink-faint mt-1">Supports Images only (JPG, PNG)</p>
+                  <p className="text-xs text-brand-ink-faint mt-1">Supports Images only (JPG, PNG, HEIC, WEBP, etc)</p>
                 </div>
 
                 {files.length > 0 && (
