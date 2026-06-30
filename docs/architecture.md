@@ -178,6 +178,7 @@ erDiagram
 - **Indexing Strategy:** 
   - Unique Index on `ticket_id` for O(1) lookups.
   - Compound Index on `{ ticket_id: 1, timestamp: -1 }` inside `TicketHistory` to rapidly construct timelines.
+  - Compound Index on `{ status: 1, created_at: -1 }` inside `Complaint` for highly optimized, instant dashboard sorting and pagination.
   - Index on `{ status: 1, is_sla_breached: 1 }` to ensure the native SLA interval checker completes in milliseconds, even with thousands of open tickets.
 
 ### 4.4 External Integrations

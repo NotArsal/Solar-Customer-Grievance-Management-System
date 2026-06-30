@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import Home from './features/public/pages/Home';
-import CustomerPortal from './features/customer/pages/CustomerPortal';
-import TrackTicket from './features/customer/pages/TrackTicket';
-import EmployeeDashboard from './features/employee/pages/EmployeeDashboard';
-import AdminDashboard from './features/admin/pages/AdminDashboard';
-import Auth from './features/auth/pages/Auth';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import PublicRoute from './features/auth/components/PublicRoute';
 import NotificationBell from './components/NotificationBell';
 import Footer from './components/Footer';
 import { Toaster } from 'react-hot-toast';
+
+const Home = lazy(() => import('./features/public/pages/Home'));
+const CustomerPortal = lazy(() => import('./features/customer/pages/CustomerPortal'));
+const TrackTicket = lazy(() => import('./features/customer/pages/TrackTicket'));
+const EmployeeDashboard = lazy(() => import('./features/employee/pages/EmployeeDashboard'));
+const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard'));
+const Auth = lazy(() => import('./features/auth/pages/Auth'));
 
 const NotFound = () => (
   <div className="flex flex-col items-center justify-center h-[50vh] text-center">
@@ -94,37 +95,39 @@ function MainApp() {
       </header>
 
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8 md:py-16">
-        <Routes>
-          <Route path="/" element={
-            <PublicRoute>
-              <Home />
-            </PublicRoute>
-          } />
-          <Route path="/auth" element={
-            <PublicRoute>
-              <Auth />
-            </PublicRoute>
-          } />
-          
-          <Route path="/portal" element={
-            <ProtectedRoute allowedRoles={['customer']}>
-              <CustomerPortal />
-            </ProtectedRoute>
-          } />
-          <Route path="/track" element={<TrackTicket />} />
-          
-          <Route path="/employee" element={
-            <ProtectedRoute allowedRoles={['employee', 'admin', 'superadmin']}>
-              <EmployeeDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div></div>}>
+          <Routes>
+            <Route path="/" element={
+              <PublicRoute>
+                <Home />
+              </PublicRoute>
+            } />
+            <Route path="/auth" element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            } />
+            
+            <Route path="/portal" element={
+              <ProtectedRoute allowedRoles={['customer']}>
+                <CustomerPortal />
+              </ProtectedRoute>
+            } />
+            <Route path="/track" element={<TrackTicket />} />
+            
+            <Route path="/employee" element={
+              <ProtectedRoute allowedRoles={['employee', 'admin', 'superadmin']}>
+                <EmployeeDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <Footer />

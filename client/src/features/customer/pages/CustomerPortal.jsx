@@ -111,7 +111,10 @@ export default function CustomerPortal() {
     try {
       let attachmentUrls = [];
       if (files.length > 0) {
-        for (const f of files) {
+        const uploadPromises = files.map(async (f) => {
+          if (f.size > 5 * 1024 * 1024) throw new Error(`File ${f.name} exceeds 5MB limit.`);
+          if (!f.type.startsWith('image/')) throw new Error(`File ${f.name} is not a valid image.`);
+
           const base64Img = await new Promise((resolve, reject) => {
              const reader = new FileReader();
              reader.readAsDataURL(f);
@@ -123,8 +126,10 @@ export default function CustomerPortal() {
             { image: base64Img },
             { signal: abortControllerRef.current?.signal }
           );
-          attachmentUrls.push(uploadRes.data.data.url);
-        }
+          return uploadRes.data.data.url;
+        });
+
+        attachmentUrls = await Promise.all(uploadPromises);
       }
 
       const generatedSubject = formData.description.length > 50 

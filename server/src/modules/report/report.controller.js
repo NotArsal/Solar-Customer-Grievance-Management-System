@@ -15,7 +15,8 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 
   const employeeWorkload = await User.find({ role: 'employee' })
     .select('name specialization activeTicketsCount')
-    .sort({ activeTicketsCount: -1 });
+    .sort({ activeTicketsCount: -1 })
+    .limit(50);
 
   res.json({
     overview: { totalComplaints, pending, inProgress, resolved, breached },

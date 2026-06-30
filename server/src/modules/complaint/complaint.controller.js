@@ -256,12 +256,17 @@ export const assignTicket = asyncHandler(async (req, res) => {
     }
   }
 
-  // Handle active count updates atomically
-  if (complaint.assigned_to && complaint.assigned_to.toString() !== assignedToId) {
+  const currentAssignedStr = complaint.assigned_to?.toString() || null;
+  
+  if (currentAssignedStr === assignedToId) {
+    return res.json({ message: 'Ticket is already assigned to this user', complaint });
+  }
+
+  if (currentAssignedStr) {
     await User.updateOne({ _id: complaint.assigned_to, activeTicketsCount: { $gt: 0 } }, { $inc: { activeTicketsCount: -1 } });
   }
   
-  if (assignedToId && (!complaint.assigned_to || complaint.assigned_to.toString() !== assignedToId)) {
+  if (assignedToId) {
     await User.updateOne({ _id: assignedToId }, { $inc: { activeTicketsCount: 1 } });
   }
   
@@ -324,12 +329,9 @@ export const overridePriority = asyncHandler(async (req, res) => {
   const oldPriority = complaint.priority;
   complaint.priority = priority;
   
-  // Recalculate SLA based on new priority (Optional but logical, doing a rough estimate or leaving it unchanged. Let's just update priority).
-  // Standardizing hours for overridden priority if we don't have category context: Critical: 12, High: 24, Medium: 72, Low: 168
-  let newHours = 72;
-  if (priority === 'High') newHours = 24;
-  else if (priority === 'Critical') newHours = 12;
-  else if (priority === 'Low') newHours = 168;
+  // Standardizing hours for overridden priority if we don't have category context
+  const prioritySlaMap = { Low: 168, Medium: 72, High: 24, Critical: 12 };
+  const newHours = prioritySlaMap[priority] || 72;
 
   const newSla = new Date();
   newSla.setHours(newSla.getHours() + newHours);

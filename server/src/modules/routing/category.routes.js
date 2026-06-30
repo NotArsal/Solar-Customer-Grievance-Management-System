@@ -1,6 +1,7 @@
 import express from 'express';
 import { createCategory, getCategories, updateCategory, deleteCategory } from './category.controller.js';
 import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middleware.js';
+import { validateZod, categorySchema } from '../../core/utils/validation.js';
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 router.get('/', getCategories);
 
 // Admin only for management
-router.post('/', authMiddleware, roleMiddleware(['admin', 'superadmin']), createCategory);
+router.post('/', authMiddleware, roleMiddleware(['admin', 'superadmin']), validateZod(categorySchema), createCategory);
 router.patch('/:id', authMiddleware, roleMiddleware(['admin', 'superadmin']), updateCategory);
 router.delete('/:id', authMiddleware, roleMiddleware(['admin', 'superadmin']), deleteCategory);
 

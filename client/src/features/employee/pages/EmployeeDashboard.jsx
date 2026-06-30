@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -76,25 +76,18 @@ export default function EmployeeDashboard() {
               No tickets currently assigned to you.
             </div>
           ) : (
-            tickets.map(t => {
-              const styles = getStatusStyles(t.status);
-              return (
-              <div 
+            tickets.map(t => (
+              <TicketCard 
                 key={t._id} 
-                onClick={() => { setSelectedTicket(t); setStatus(t.status); setUpdateNote(''); }}
-                className={`p-4 border rounded-md cursor-pointer transition-colors ${selectedTicket?._id === t._id ? 'border-brand-primary bg-brand-canvas shadow-level-1' : `border-brand-hairline hover:border-brand-hairline-strong ${styles.rowBg || 'bg-brand-canvas-soft'}`} ${styles.bgSide}`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-mono text-sm font-medium text-brand-ink">{t.ticket_id}</span>
-                  <span className={`text-[10px] uppercase font-medium px-2 py-0.5 rounded-sm border ${styles.badge}`}>{t.status}</span>
-                </div>
-                <p className="text-sm font-medium text-brand-ink-secondary truncate">{t.subject}</p>
-                <div className="flex justify-between items-end mt-3 text-[10px] text-brand-ink-mute">
-                  <span>{t.priority} Priority</span>
-                  <SlaTimer dueAt={t.sla_due_at} isBreached={t.is_sla_breached} status={t.status} />
-                </div>
-              </div>
-            )})
+                ticket={t} 
+                isSelected={selectedTicket?._id === t._id} 
+                onClick={(ticket) => { 
+                  setSelectedTicket(ticket); 
+                  setStatus(ticket.status); 
+                  setUpdateNote(''); 
+                }} 
+              />
+            ))
           )}
           {hasMore && !isLoading && (
             <button 
@@ -217,3 +210,28 @@ export default function EmployeeDashboard() {
     </div>
   );
 }
+
+const TicketCard = React.memo(({ ticket, isSelected, onClick }) => {
+  const styles = getStatusStyles(ticket.status);
+  
+  const handleClick = useCallback(() => {
+    onClick(ticket);
+  }, [ticket, onClick]);
+
+  return (
+    <div 
+      onClick={handleClick}
+      className={`p-4 border rounded-md cursor-pointer transition-colors ${isSelected ? 'border-brand-primary bg-brand-canvas shadow-level-1' : `border-brand-hairline hover:border-brand-hairline-strong ${styles.rowBg || 'bg-brand-canvas-soft'}`} ${styles.bgSide}`}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <span className="font-mono text-sm font-medium text-brand-ink">{ticket.ticket_id}</span>
+        <span className={`text-[10px] uppercase font-medium px-2 py-0.5 rounded-sm border ${styles.badge}`}>{ticket.status}</span>
+      </div>
+      <p className="text-sm font-medium text-brand-ink-secondary truncate">{ticket.subject}</p>
+      <div className="flex justify-between items-end mt-3 text-[10px] text-brand-ink-mute">
+        <span>{ticket.priority} Priority</span>
+        <SlaTimer dueAt={ticket.sla_due_at} isBreached={ticket.is_sla_breached} status={ticket.status} />
+      </div>
+    </div>
+  );
+});

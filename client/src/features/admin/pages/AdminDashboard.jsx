@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../../config/api';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -92,6 +92,10 @@ export default function AdminDashboard() {
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
+    if (!newCat.name || !newCat.assigned_department || !newCat.sla_hours || newCat.sla_hours <= 0) {
+      toast.error('Invalid category data');
+      return;
+    }
     try {
       await api.post('/v1/routing-categories', newCat);
       setNewCat({ name: '', priority: 'Medium', assigned_department: 'General', sla_hours: 48 });
@@ -145,75 +149,13 @@ export default function AdminDashboard() {
               </thead>
               <tbody className="text-sm">
                 {tickets.map(t => (
-                  <tr key={t._id} className="border-b border-brand-hairline-cool hover:bg-brand-canvas-soft transition-colors">
-                    <td className="p-4 font-mono font-medium text-brand-ink">{t.ticket_id}</td>
-                    <td className="p-4 text-brand-ink-secondary">{t.customer_name}</td>
-                    <td className="p-4">
-                      <div className="relative group">
-                        <div className="text-sm font-medium text-brand-ink-secondary max-w-[150px] truncate cursor-pointer underline decoration-brand-hairline-strong underline-offset-4 hover:decoration-brand-primary transition-colors">
-                          {t.subject}
-                        </div>
-                        <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50 w-80 p-4 bg-brand-canvas border border-brand-hairline-strong shadow-level-2 rounded-md text-sm text-brand-ink whitespace-pre-wrap">
-                          <span className="font-medium text-brand-ink block mb-2 border-b border-brand-hairline-cool pb-1">Full Description</span>
-                          <span className="text-xs text-brand-ink-mute block mb-2">{t.description}</span>
-                          {t.attachments?.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-brand-hairline-cool">
-                              <span className="font-medium text-[10px] uppercase text-brand-ink-mute block mb-2">Attachments</span>
-                              <div className="flex flex-wrap gap-2">
-                                {t.attachments.map((url, idx) => (
-                                  <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-12 h-12 rounded border border-brand-hairline overflow-hidden hover:border-brand-primary transition-colors">
-                                    <img src={url} alt="Attachment" className="w-full h-full object-cover" />
-                                  </a>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wide border shadow-level-1 ${getStatusStyles(t.status).badge}`}>
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <select 
-                        className={`text-xs p-1 rounded-sm font-medium border focus:outline-none ${t.priority === 'High' || t.priority === 'Critical' ? 'text-red-600 border-red-200 bg-red-50' : 'text-brand-ink border-brand-hairline-strong bg-brand-canvas'}`}
-                        value={t.priority}
-                        onChange={e => handlePriorityOverride(t._id, e.target.value)}
-                      >
-                        <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
-                      </select>
-                    </td>
-                    <td className="p-4 align-top">
-                      <SlaTimer dueAt={t.sla_due_at} isBreached={t.is_sla_breached} status={t.status} />
-                    </td>
-                    <td className="p-4">
-                      <select 
-                        className="input-field py-1 px-2 text-xs cursor-pointer w-32 border-brand-hairline-strong" 
-                        value={t.assigned_to?._id || ''} 
-                        onChange={e => handleAssign(t._id, e.target.value)}
-                      >
-                        <option value="">Unassigned</option>
-                        {employees.map(emp => (
-                          <option key={emp._id} value={emp._id}>{emp.name}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="p-4">
-                      {t.reassignment_request?.is_requested ? (
-                        <div className="relative group">
-                          <div className="text-[10px] leading-tight text-red-600 font-medium border border-red-200 bg-red-50 rounded-sm p-1 max-w-[160px] break-words line-clamp-3 cursor-pointer">
-                            REQUESTED: {t.reassignment_request.reason}
-                          </div>
-                          <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-50 w-64 p-3 bg-brand-canvas border border-brand-hairline-strong shadow-level-2 rounded-md text-xs text-brand-ink whitespace-pre-wrap">
-                            <span className="font-medium text-red-600 block mb-1">Full Reason:</span>
-                            {t.reassignment_request.reason}
-                          </div>
-                        </div>
-                      ) : <span className="text-brand-ink-faint text-xs">-</span>}
-                    </td>
-                  </tr>
+                  <TicketRow 
+                    key={t._id} 
+                    t={t} 
+                    employees={employees} 
+                    onPriorityOverride={handlePriorityOverride} 
+                    onAssign={handleAssign} 
+                  />
                 ))}
               </tbody>
             </table>
@@ -327,3 +269,85 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+const TicketRow = React.memo(({ t, employees, onPriorityOverride, onAssign }) => {
+  const handlePriorityChange = useCallback((e) => {
+    onPriorityOverride(t._id, e.target.value);
+  }, [t._id, onPriorityOverride]);
+
+  const handleAssignChange = useCallback((e) => {
+    onAssign(t._id, e.target.value);
+  }, [t._id, onAssign]);
+
+  return (
+    <tr className="border-b border-brand-hairline-cool hover:bg-brand-canvas-soft transition-colors">
+      <td className="p-4 font-mono font-medium text-brand-ink">{t.ticket_id}</td>
+      <td className="p-4 text-brand-ink-secondary">{t.customer_name}</td>
+      <td className="p-4">
+        <div className="relative group">
+          <div className="text-sm font-medium text-brand-ink-secondary max-w-[150px] truncate cursor-pointer underline decoration-brand-hairline-strong underline-offset-4 hover:decoration-brand-primary transition-colors">
+            {t.subject}
+          </div>
+          <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50 w-80 p-4 bg-brand-canvas border border-brand-hairline-strong shadow-level-2 rounded-md text-sm text-brand-ink whitespace-pre-wrap">
+            <span className="font-medium text-brand-ink block mb-2 border-b border-brand-hairline-cool pb-1">Full Description</span>
+            <span className="text-xs text-brand-ink-mute block mb-2">{t.description}</span>
+            {t.attachments?.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-brand-hairline-cool">
+                <span className="font-medium text-[10px] uppercase text-brand-ink-mute block mb-2">Attachments</span>
+                <div className="flex flex-wrap gap-2">
+                  {t.attachments.map((url, idx) => (
+                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-12 h-12 rounded border border-brand-hairline overflow-hidden hover:border-brand-primary transition-colors">
+                      <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="p-4">
+        <span className={`px-2 py-1 rounded-sm text-[10px] font-medium uppercase tracking-wide border shadow-level-1 ${getStatusStyles(t.status).badge}`}>
+          {t.status}
+        </span>
+      </td>
+      <td className="p-4">
+        <select 
+          className={`text-xs p-1 rounded-sm font-medium border focus:outline-none ${t.priority === 'High' || t.priority === 'Critical' ? 'text-red-600 border-red-200 bg-red-50' : 'text-brand-ink border-brand-hairline-strong bg-brand-canvas'}`}
+          value={t.priority}
+          onChange={handlePriorityChange}
+        >
+          <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+        </select>
+      </td>
+      <td className="p-4 align-top">
+        <SlaTimer dueAt={t.sla_due_at} isBreached={t.is_sla_breached} status={t.status} />
+      </td>
+      <td className="p-4">
+        <select 
+          className="input-field py-1 px-2 text-xs cursor-pointer w-32 border-brand-hairline-strong" 
+          value={t.assigned_to?._id || ''} 
+          onChange={handleAssignChange}
+        >
+          <option value="">Unassigned</option>
+          {employees.map(emp => (
+            <option key={emp._id} value={emp._id}>{emp.name}</option>
+          ))}
+        </select>
+      </td>
+      <td className="p-4">
+        {t.reassignment_request?.is_requested ? (
+          <div className="relative group">
+            <div className="text-[10px] leading-tight text-red-600 font-medium border border-red-200 bg-red-50 rounded-sm p-1 max-w-[160px] break-words line-clamp-3 cursor-pointer">
+              REQUESTED: {t.reassignment_request.reason}
+            </div>
+            <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-50 w-64 p-3 bg-brand-canvas border border-brand-hairline-strong shadow-level-2 rounded-md text-xs text-brand-ink whitespace-pre-wrap">
+              <span className="font-medium text-red-600 block mb-1">Full Reason:</span>
+              {t.reassignment_request.reason}
+            </div>
+          </div>
+        ) : <span className="text-brand-ink-faint text-xs">-</span>}
+      </td>
+    </tr>
+  );
+});

@@ -147,7 +147,7 @@ export const processEmailQueue = async () => {
 
     if (!transporter) await initTransporter();
 
-    for (const email of pendingEmails) {
+    await Promise.all(pendingEmails.map(async (email) => {
       try {
         const info = await transporter.sendMail({
           from: process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('example') 
@@ -159,17 +159,17 @@ export const processEmailQueue = async () => {
         });
 
         email.status = 'sent';
-        email.last_error = \`Successfully sent (Message ID: \${info.messageId})\`;
+        email.last_error = `Successfully sent (Message ID: ${info.messageId})`;
         await email.save();
-        console.log(\`✅ Queued email successfully sent to \${email.to}\`);
+        console.log(`✅ Queued email successfully sent to ${email.to}`);
       } catch (sendErr) {
         email.status = 'failed';
         email.retry_count += 1;
         email.last_error = sendErr.message;
         await email.save();
-        console.error(\`Failed to send queued email to \${email.to} (Retry \${email.retry_count}/5): \${sendErr.message}\`);
+        console.error(`Failed to send queued email to ${email.to} (Retry ${email.retry_count}/5): ${sendErr.message}`);
       }
-    }
+    }));
   } catch (error) {
     console.error('Error processing email queue:', error);
   }

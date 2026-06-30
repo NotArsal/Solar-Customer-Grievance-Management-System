@@ -2,6 +2,7 @@ import express from 'express';
 import { createComplaint, trackComplaint, listComplaints, updateStatus, assignTicket, requestReassignment, overridePriority } from './complaint.controller.js';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware, roleMiddleware } from '../../core/middleware/auth.middleware.js';
+import { validateZod, complaintSchema } from '../../core/utils/validation.js';
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const complaintLimiter = rateLimit({
   message: { status: 'error', message: 'Too many complaints from this IP, please try again after 15 minutes.' }
 });
 
-router.post('/', authMiddleware, complaintLimiter, createComplaint); // Now requires auth to associate customer_id
+router.post('/', authMiddleware, validateZod(complaintSchema), complaintLimiter, createComplaint); // Now requires auth to associate customer_id
 router.get('/:ticket_id/track', trackComplaint);
 
 // Protected routes
