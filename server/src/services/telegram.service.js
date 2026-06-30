@@ -9,14 +9,22 @@ const isDummyToken = !TELEGRAM_TOKEN || TELEGRAM_TOKEN.includes('dummy') || TELE
 let bot = null;
 
 if (!isDummyToken) {
-  bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+  const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
+  if (webhookUrl) {
+    bot = new TelegramBot(TELEGRAM_TOKEN);
+    bot.setWebHook(webhookUrl).catch(err => console.error('Telegram webhook setup error:', err.message));
+    console.log(`✅ Telegram Bot is running in Webhook mode (URL: ${webhookUrl})`);
+  } else {
+    bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+    console.log('✅ Telegram Bot is running in polling mode...');
+  }
+  
   bot.setMyCommands([
     { command: '/start', description: 'Start the bot and see instructions' },
     { command: '/raise', description: 'Raise a new complaint' },
     { command: '/track', description: 'Track an existing ticket (e.g. /track NTS-1234)' },
     { command: '/cancel', description: 'Cancel current complaint registration' }
   ]).catch(err => console.error('Telegram command setup error:', err.message));
-  console.log('✅ Telegram Bot is running in polling mode...');
 } else {
   console.log('⚠️ Telegram Bot disabled (dummy token detected).');
 }
@@ -208,8 +216,11 @@ if (bot) {
 });
 }
 
-// Mock webhook handler
+// Webhook handler
 export const handleTelegramWebhook = async (req, res) => {
+  if (bot && req.body) {
+    bot.processUpdate(req.body);
+  }
   res.sendStatus(200);
 };
 

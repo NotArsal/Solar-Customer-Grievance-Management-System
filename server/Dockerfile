@@ -1,19 +1,22 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
 # Set working directory
 WORKDIR /app
 
+# Set node environment to production
+ENV NODE_ENV=production
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies (only production deps)
+RUN npm ci --only=production
 
-# Copy source code (this is mostly overridden by volume mounting in dev, but good practice)
+# Copy source code
 COPY . .
 
 # Expose API port
 EXPOSE 5000
 
-# Run dev server with nodemon
-CMD ["npm", "run", "dev"]
+# Run server
+CMD ["npm", "start"]
