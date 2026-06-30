@@ -34,7 +34,7 @@ router.post('/upload', async (req, res) => {
       return res.status(400).json({ message: 'Base64 image data is required' });
     }
 
-    const formData = new URLSearchParams();
+    const formData = new FormData();
     const base64Data = image.includes(',') ? image.split(',')[1] : image;
     formData.append('image', base64Data);
     
@@ -45,10 +45,7 @@ router.post('/upload', async (req, res) => {
 
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      body: formData
     });
 
     const data = await response.json();
