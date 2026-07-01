@@ -73,5 +73,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create Dummy Env Files
+        run: |
+          touch server/.env
+          touch client/.env
+
       - name: Verify Docker Compose Build
         run: docker compose config
