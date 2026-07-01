@@ -3,11 +3,24 @@ import Complaint from '../complaint/complaint.model.js';
 import User from '../user/user.model.js';
 
 export const getDashboardStats = asyncHandler(async (req, res) => {
-  const totalComplaints = await Complaint.countDocuments();
-  const pending = await Complaint.countDocuments({ status: 'pending' });
-  const inProgress = await Complaint.countDocuments({ status: 'in-progress' });
-  const resolved = await Complaint.countDocuments({ status: 'resolved' });
-  const breached = await Complaint.countDocuments({ is_sla_breached: true });
+  const overviewStats = await Complaint.aggregate([
+    {
+      $facet: {
+        totalComplaints: [{ $count: "count" }],
+        pending: [{ $match: { status: 'pending' } }, { $count: "count" }],
+        inProgress: [{ $match: { status: 'in-progress' } }, { $count: "count" }],
+        resolved: [{ $match: { status: 'resolved' } }, { $count: "count" }],
+        breached: [{ $match: { is_sla_breached: true } }, { $count: "count" }]
+      }
+    }
+  ]);
+  
+  const stats = overviewStats[0];
+  const totalComplaints = stats.totalComplaints[0]?.count || 0;
+  const pending = stats.pending[0]?.count || 0;
+  const inProgress = stats.inProgress[0]?.count || 0;
+  const resolved = stats.resolved[0]?.count || 0;
+  const breached = stats.breached[0]?.count || 0;
 
   const categoryDistribution = await Complaint.aggregate([
     { $group: { _id: "$category", count: { $sum: 1 } } }
