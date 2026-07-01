@@ -16,6 +16,8 @@ Before deploying the Customer Grievance Management System (CGMS) to production, 
 
 ## 2. Security & Boundaries
 - [ ] **OTP Gateway:** The hardcoded OTP fallback has been removed (ADR-004). You **must** wire the `otp` variable in `auth.controller.js` to an SMS API (like Twilio) or Telegram to allow customers to log in.
+- [ ] **Environment Variables:** Ensure all environment variables are correctly set in the production environment.
+- [ ] **CORS:** Re-verify CORS policy allows only production domain `https://industryproject-frontend.vercel.app`.
 - [ ] **HTTPS / SSL:** Ensure the hosting provider enforces HTTPS on all routes. The authentication JWT is passed back to the client; intercepting it over HTTP is a critical risk.
 - [ ] **Rate Limits:** `express-rate-limit` is active. Verify that your hosting provider correctly forwards client IPs (e.g., if using a load balancer, you may need `app.set('trust proxy', 1)` in `app.js`).
 
@@ -29,3 +31,9 @@ Before deploying the Customer Grievance Management System (CGMS) to production, 
 ## 5. Frontend (Client)
 - [ ] **API URL:** Ensure `VITE_API_URL` in the frontend build pipeline points to the live production backend URL.
 - [ ] **Cache Busting:** Ensure your CDN (Vercel/Netlify) is correctly cache-busting `index.html` while aggressively caching hashed assets (`.js`, `.css`).
+
+## 6. Post-Deployment Verification
+- [ ] **Feature Flags:** Ensure all feature flags (`useFeatureFlag`) are configured correctly in the production environment and test gradual rollouts if enabled.
+- [ ] **Telemetry:** Verify that React Error Boundary catches intentional errors and sends telemetry events.
+- [ ] **Winston Logs:** Monitor Winston error logs for the first 30 minutes after launch. Confirm Winston logger is generating structured JSON logs and is viewable in log aggregator.
+- [ ] **E2E Test:** Perform a live test of the entire Complaint Lifecycle on production.

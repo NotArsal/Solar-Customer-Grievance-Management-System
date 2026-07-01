@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { errorHandler } from './core/middleware/error.middleware.js';
 import { validatePayload } from './core/middleware/validate.middleware.js';
+import { logger } from './core/utils/logger.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
 import complaintRoutes from './modules/complaint/complaint.routes.js';
@@ -51,16 +52,15 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-      console.log(JSON.stringify({
-        event: 'http_request',
-        requestId: req.id,
-        method: req.method,
-        url: req.originalUrl,
-        status: res.statusCode,
-        durationMs: duration,
-        ip: req.ip || req.connection.remoteAddress,
-        userAgent: req.get('user-agent')
-      }));
+    logger.info('http_request', {
+      requestId: req.id,
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      durationMs: duration,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('user-agent')
+    });
   });
   next();
 });

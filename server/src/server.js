@@ -7,6 +7,7 @@ import app from './app.js';
 import { connectDB } from './config/db.js';
 import { initJobs } from './jobs/sla.checker.js';
 import { initEmailRetryJob } from './jobs/email.retry.job.js';
+import { logger } from './core/utils/logger.js';
 
 import { seedEmployees } from './core/seedEmployees.js';
 
@@ -17,6 +18,8 @@ connectDB().then(async () => {
   initJobs();
   initEmailRetryJob();
   app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   });
+}).catch(err => {
+  logger.error('Database connection failed', { error: err.message, stack: err.stack });
 });

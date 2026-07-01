@@ -57,10 +57,12 @@ cgms-natureteksolar/
 │   └── server.js
 │
 ├── docs/                            # Project specifications and diagrams
+│   ├── adrs/                        # Architecture Decision Records
 │   ├── architecture.md              # Detailed architecture breakdown
 │   ├── Nature_Tek_Solar_Grievance_PRD.md
 │   └── Nature_Tek_Solar_Dataset_Requirements.md
 │
+├── CONTRIBUTING.md                  # Guidelines for branching and commits
 └── README.md
 ```
 
@@ -101,6 +103,8 @@ main                  ← production-ready, deployed to Render/Vercel
 ```
 
 **Rule:** Never push directly to `main`. All merges go `feat/* → dev → main` via Pull Request with at least 1 reviewer approval.
+
+For detailed guidelines on branch naming conventions and commit message formats, please refer to our **[Contributing Guidelines](CONTRIBUTING.md)**.
 
 ---
 
@@ -263,6 +267,13 @@ Full API docs: see `docs/Nature_Tek_Solar_Grievance_PRD.md` Section 10
 ## Changelog
 
 For a detailed list of recent updates, bug fixes, performance optimizations, and security patches, please see the [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+## Observability & Feature Flags
+
+- **Telemetry:** The backend uses structured JSON logging via Winston (see [ADR-006](docs/adrs/006-telemetry-and-logging-strategy.md)). The frontend automatically captures and beacons render errors via a top-level React Error Boundary.
+- **Feature Flags:** Experimental UI components can be toggled using the `useFeatureFlag` hook. You can force a flag on locally by appending `?ff_{flagName}=true` to the URL (see [ADR-007](docs/adrs/007-feature-flag-rollouts.md)).
 
 ---
 
