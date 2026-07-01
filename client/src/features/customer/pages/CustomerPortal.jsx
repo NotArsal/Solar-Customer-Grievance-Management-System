@@ -46,7 +46,7 @@ export default function CustomerPortal() {
     setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  const fetchMyTickets = async () => {
+  const fetchMyTickets = useCallback(async () => {
     try {
       const res = await api.get('/v1/complaints');
       setMyTickets(res.data.complaints || []);
@@ -55,9 +55,9 @@ export default function CustomerPortal() {
     } finally {
       setIsLoadingTickets(false);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const res = await api.get('/v1/routing-categories', {
         signal: abortControllerRef.current?.signal
@@ -76,7 +76,7 @@ export default function CustomerPortal() {
         toast.error('Failed to load issue categories');
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -90,7 +90,7 @@ export default function CustomerPortal() {
       fetchMyTickets();
       fetchCategories();
     }, 0);
-  }, [navigate]);
+  }, [navigate, fetchMyTickets, fetchCategories]);
 
 
 
@@ -302,21 +302,27 @@ export default function CustomerPortal() {
                <p className="text-sm text-brand-ink-mute text-center py-4">You have no active tickets.</p>
              ) : (
                myTickets.map(t => (
-                 <div key={t._id} className="p-4 border border-brand-hairline rounded-md shadow-level-1 hover:bg-brand-canvas-soft cursor-pointer transition-colors" onClick={() => navigate('/track?id=' + t.ticket_id)}>
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-sm text-brand-ink">{t.ticket_id}</span>
-                      <span className="text-[10px] uppercase font-medium bg-brand-canvas-soft border border-brand-hairline-cool px-2 py-0.5 rounded-sm text-brand-ink-secondary">{t.status}</span>
-                    </div>
-                    <p className="text-sm font-medium truncate text-brand-ink-secondary">{t.subject}</p>
-                    <div className="flex justify-between items-center mt-3 text-[10px] text-brand-ink-mute">
-                      <span>{new Date(t.created_at).toLocaleDateString()}</span>
-                      <span className={`font-medium ${t.priority === 'High' || t.priority === 'Critical' ? 'text-red-600' : ''}`}>{t.priority}</span>
-                    </div>
-                 </div>
+                 <TicketItem key={t._id} t={t} onClick={() => navigate('/track?id=' + t.ticket_id)} />
                ))
              )}
            </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TicketItem({ t, onClick }) {
+  return (
+    <div className="p-4 border border-brand-hairline rounded-md shadow-level-1 hover:bg-brand-canvas-soft cursor-pointer transition-colors" onClick={onClick}>
+      <div className="flex justify-between items-start mb-2">
+        <span className="font-medium text-sm text-brand-ink">{t.ticket_id}</span>
+        <span className="text-[10px] uppercase font-medium bg-brand-canvas-soft border border-brand-hairline-cool px-2 py-0.5 rounded-sm text-brand-ink-secondary">{t.status}</span>
+      </div>
+      <p className="text-sm font-medium truncate text-brand-ink-secondary">{t.subject}</p>
+      <div className="flex justify-between items-center mt-3 text-[10px] text-brand-ink-mute">
+        <span>{new Date(t.created_at).toLocaleDateString()}</span>
+        <span className={`font-medium ${t.priority === 'High' || t.priority === 'Critical' ? 'text-red-600' : ''}`}>{t.priority}</span>
       </div>
     </div>
   );

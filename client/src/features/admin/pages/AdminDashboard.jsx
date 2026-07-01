@@ -73,22 +73,22 @@ export default function AdminDashboard() {
 
   // Functions moved above with useCallback
 
-  const handleAssign = async (ticketId, employeeId) => {
+  const handleAssign = useCallback(async (ticketId, employeeId) => {
     if (!employeeId) return;
     try {
       await api.patch(`/v1/complaints/${ticketId}/assign`, { assigned_to: employeeId });
       toast.success('Ticket assigned successfully!');
       fetchTickets();
     } catch { toast.error('Failed to assign ticket'); }
-  };
+  }, [fetchTickets]);
 
-  const handlePriorityOverride = async (ticketId, priority) => {
+  const handlePriorityOverride = useCallback(async (ticketId, priority) => {
     try {
       await api.patch(`/v1/complaints/${ticketId}/priority`, { priority, reason: 'Admin Override' });
       toast.success('Priority overridden successfully!');
       fetchTickets();
     } catch { toast.error('Failed to override priority'); }
-  };
+  }, [fetchTickets]);
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();

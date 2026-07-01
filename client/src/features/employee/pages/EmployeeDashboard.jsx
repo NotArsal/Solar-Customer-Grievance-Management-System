@@ -34,6 +34,12 @@ export default function EmployeeDashboard() {
     }
   }, [navigate]);
 
+  const handleTicketClick = useCallback((ticket) => {
+    setSelectedTicket(ticket);
+    setStatus(ticket.status);
+    setUpdateNote('');
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     let user;
@@ -81,11 +87,7 @@ export default function EmployeeDashboard() {
                 key={t._id} 
                 ticket={t} 
                 isSelected={selectedTicket?._id === t._id} 
-                onClick={(ticket) => { 
-                  setSelectedTicket(ticket); 
-                  setStatus(ticket.status); 
-                  setUpdateNote(''); 
-                }} 
+                onClick={handleTicketClick}
               />
             ))
           )}

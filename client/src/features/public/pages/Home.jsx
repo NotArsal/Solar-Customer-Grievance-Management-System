@@ -38,27 +38,33 @@ export default function Home() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-primary/20 blur-[80px] rounded-full z-0 pointer-events-none group-hover:bg-brand-primary/30 transition-all duration-700"></div>
           <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-yellow-400/20 blur-[60px] rounded-full z-0 pointer-events-none"></div>
 
-          <div className="relative z-10 w-[80%] h-[70%] border border-brand-hairline-cool bg-white rounded-xl shadow-level-1 overflow-hidden flex flex-col transition-transform duration-500 group-hover:scale-105">
-            {/* Fake UI Header */}
-            <div className="h-10 border-b border-brand-hairline-cool bg-brand-canvas-soft flex items-center px-4 space-x-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-            </div>
-            {/* Fake UI Content */}
-            <div className="flex-1 p-6 space-y-4">
-              <div className="h-4 w-1/3 bg-brand-hairline rounded-md"></div>
-              <div className="h-24 w-full bg-brand-canvas-soft rounded-lg border border-brand-hairline-cool flex items-center justify-center text-brand-ink-faint text-sm">
-                Dashboard Preview
-              </div>
-              <div className="flex space-x-4">
-                <div className="h-20 flex-1 bg-brand-primary/10 rounded-lg border border-brand-primary/20"></div>
-                <div className="h-20 flex-1 bg-brand-canvas-soft rounded-lg border border-brand-hairline-cool"></div>
-              </div>
-            </div>
-          </div>
+          <HeroMockup />
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+function HeroMockup() {
+  return (
+    <div className="relative z-10 w-[80%] h-[70%] border border-brand-hairline-cool bg-white rounded-xl shadow-level-1 overflow-hidden flex flex-col transition-transform duration-500 group-hover:scale-105">
+      {/* Fake UI Header */}
+      <div className="h-10 border-b border-brand-hairline-cool bg-brand-canvas-soft flex items-center px-4 space-x-2">
+        <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+      </div>
+      {/* Fake UI Content */}
+      <div className="flex-1 p-6 space-y-4">
+        <div className="h-4 w-1/3 bg-brand-hairline rounded-md"></div>
+        <div className="h-24 w-full bg-brand-canvas-soft rounded-lg border border-brand-hairline-cool flex items-center justify-center text-brand-ink-faint text-sm">
+          Dashboard Preview
+        </div>
+        <div className="flex space-x-4">
+          <div className="h-20 flex-1 bg-brand-primary/10 rounded-lg border border-brand-primary/20"></div>
+          <div className="h-20 flex-1 bg-brand-canvas-soft rounded-lg border border-brand-hairline-cool"></div>
+        </div>
       </div>
     </div>
   );
