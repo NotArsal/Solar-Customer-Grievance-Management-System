@@ -42,7 +42,7 @@ class ErrorBoundary extends React.Component {
             <p className="text-brand-ink-faint mb-6">
               An unexpected error occurred in the application. We have been notified and are looking into it.
             </p>
-            {process.env.NODE_ENV !== 'production' && (
+            {import.meta.env.MODE !== 'production' && (
               <details className="whitespace-pre-wrap text-sm text-red-800 bg-red-50 p-4 rounded-lg overflow-auto mb-6 max-h-64">
                 {this.state.error && this.state.error.toString()}
                 <br />

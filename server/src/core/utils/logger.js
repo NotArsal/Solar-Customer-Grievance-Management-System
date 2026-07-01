@@ -49,27 +49,29 @@ export const logger = winston.createLogger({
     timestamp(),
     json() // structured JSON logging
   ),
-  transports: [
-    fileRotateTransport,
-    errorFileRotateTransport,
-  ],
-  exceptionHandlers: [
-    new winston.transports.File({ filename: 'logs/exceptions.log' }),
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({ filename: 'logs/rejections.log' }),
-  ],
+  transports: process.env.NODE_ENV === 'test' 
+    ? [new winston.transports.Console({ silent: true })] 
+    : [
+      fileRotateTransport,
+      errorFileRotateTransport,
+    ],
+  exceptionHandlers: process.env.NODE_ENV === 'test'
+    ? []
+    : [new winston.transports.File({ filename: 'logs/exceptions.log' })],
+  rejectionHandlers: process.env.NODE_ENV === 'test'
+    ? []
+    : [new winston.transports.File({ filename: 'logs/rejections.log' })],
 });
 
 // In development, also log to console in a readable format
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize({ all: true }),
       winston.format.simple()
     ),
   }));
-} else {
+} else if (process.env.NODE_ENV === 'production') {
   // In production, we also want console logs so Docker/stdout captures them, but as JSON
   logger.add(new winston.transports.Console({
     format: winston.format.combine(

@@ -3,7 +3,7 @@ const TELEMETRY_ENDPOINT = import.meta.env.VITE_API_URL
   : 'http://localhost:5000/v1/telemetry';
 
 export const sendTelemetry = (eventType, data = {}) => {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.MODE === 'development') {
     console.log(`[Telemetry] ${eventType}:`, data);
     return;
   }
@@ -28,7 +28,7 @@ export const sendTelemetry = (eventType, data = {}) => {
         keepalive: true
       }).catch(() => {});
     }
-  } catch (err) {
+  } catch {
     // Ignore telemetry errors
   }
 };
